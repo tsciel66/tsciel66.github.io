@@ -127,41 +127,29 @@
     </div>
 
 <script>
-    // --- 1. La fonction de hachage (Moteur de sécurité) ---
-    async function sha256(message) {
-        // Cette fonction transforme le texte en empreinte numérique illisible
-        const msgBuffer = new TextEncoder().encode(message);
-        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-        return hashHex;
-    }
+    function login() {
+        // 1. Récupération (avec nettoyage des espaces)
+        var u = document.getElementById('username').value.trim();
+        var p = document.getElementById('password').value.trim();
+        var err = document.getElementById('error');
 
-    async function login() {
-        // --- 2. Récupération & Nettoyage ---
-        // .trim() est CRUCIAL : il enlève les espaces avant/après que les téléphones ajoutent souvent
-        const u = document.getElementById('username').value.trim();
-        const p = document.getElementById('password').value.trim();
-        const err = document.getElementById('error');
-
-        // --- 3. Configuration de la sécurité ---
-        // L'utilisateur autorisé (On le met en minuscules pour comparer facilement)
-        const userCible = 'etudiant';
+        // 2. Configuration
+        var userCible = "etudiant";
         
-        // L'empreinte SHA-256 de "tsciel2025" (Impossible de deviner le mdp en lisant ça)
-        const hashCible = 'd056372b0de35d726527b2d559df4a323386e680a6c0f7db69643d995c69704e';
+        // Le mot de passe n'est pas visible en clair pour un humain
+        var passCible = "dHNjaWVsMjAyNQ==";
 
-        // --- 4. Calcul de l'empreinte de ce que l'utilisateur a tapé ---
-        const hashSaisi = await sha256(p);
+        // 3. On encode ce que l'utilisateur a tapé pour voir si ça correspond
+        // btoa() est la fonction qui transforme le texte en code Base64
+        try {
+            var passSaisiEncode = btoa(p);
+        } catch (e) {
+            // Si l'utilisateur met des caractères bizarres
+            var passSaisiEncode = "erreur";
+        }
 
-        // Outils de débogage (Appuyez sur F12 > Console pour voir ce qu'il se passe si ça bloque)
-        console.log("Utilisateur saisi :", u);
-        console.log("Hash attendu :", hashCible);
-        console.log("Hash calculé :", hashSaisi);
-
-        // --- 5. Vérification ---
-        // On compare l'utilisateur (en minuscules) et les deux empreintes numériques
-        if(u.toLowerCase() === userCible && hashSaisi === hashCible) {
+        // 4. Vérification
+        if (u.toLowerCase() === userCible && passSaisiEncode === passCible) {
             
             // SUCCÈS
             sessionStorage.setItem('authenticated', 'true');
@@ -174,7 +162,7 @@
             err.innerHTML = "❌ Identifiant ou mot de passe incorrect";
             
             // Animation
-            const card = document.querySelector('.login-card');
+            var card = document.querySelector('.login-card');
             card.animate([
                 { transform: 'translateX(0)' },
                 { transform: 'translateX(-10px)' },
@@ -183,12 +171,10 @@
             ], { duration: 300 });
         }
     }
-    
-    // Touche Entrée pour valider
+
     document.addEventListener('keypress', function (e) {
         if (e.key === 'Enter') login();
     });
 </script>
-
 </body>
 </html>
