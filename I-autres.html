@@ -3,76 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Autres Programmes</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <title>BTS-CIEL - Autres Ressources</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌩️</text></svg>">
+    
     <style>
-        /* --- STYLE GLOBAL (Thème Violet) --- */
+        /* --- THEME HIGH-TECH / CYBER (Identique à info.html) --- */
+        :root {
+            --bg-color: #050505;
+            --grid-color: rgba(0, 255, 65, 0.05);
+            --card-bg: rgba(10, 20, 30, 0.8);
+            --neon-green: #00ff41;
+            --neon-blue: #00f3ff;
+            --neon-purple: #a855f7; /* Ajout du violet pour rappeler l'ancienne page */
+            --text-main: #e0e0e0;
+            --font-tech: 'Share Tech Mono', monospace;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #0f172a;
-            /* Dégradé Violet Mystique */
-            background-image: radial-gradient(circle at 20% 20%, rgba(139, 92, 246, 0.15) 0%, transparent 40%),
-                              radial-gradient(circle at 80% 80%, rgba(217, 70, 239, 0.15) 0%, transparent 40%);
-            color: #ffffff;
+            font-family: var(--font-tech);
+            background-color: var(--bg-color);
+            color: var(--text-main);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             padding-top: 2rem;
+            
+            /* Fond "Grille Informatique" */
+            background-image: 
+                linear-gradient(var(--grid-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px),
+                radial-gradient(circle at 50% 0%, rgba(168, 85, 247, 0.15) 0%, transparent 60%); /* Légère teinte violette ici */
+            background-size: 40px 40px, 40px 40px, 100% 100%;
         }
 
         .mobile-container {
             width: 100%; max-width: 400px; padding: 1.5rem;
-            display: flex; flex-direction: column; gap: 1.5rem;
+            display: flex; flex-direction: column; gap: 1.5rem; padding-bottom: 4rem;
         }
 
-        /* HEADER */
-        header { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
+        /* --- HEADER TERMINAL --- */
+        header {
+            display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;
+            border-bottom: 1px solid var(--neon-purple); /* Accent violet */
+            padding-bottom: 15px; position: relative;
+        }
+
+        header::after {
+            content: 'DIR_LISTING'; /* Changement du petit texte déco */
+            position: absolute; bottom: -20px; right: 0;
+            font-size: 0.6rem; color: var(--neon-purple); opacity: 0.7;
+        }
 
         .back-btn {
-            background: rgba(255, 255, 255, 0.1); border: none; color: white; width: 40px; height: 40px;
-            border-radius: 12px; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; text-decoration: none; font-size: 1.2rem; transition: background 0.2s;
+            background: rgba(0, 0, 0, 0.5); border: 1px solid var(--neon-purple); color: var(--neon-purple);
+            width: 45px; height: 45px; border-radius: 4px; 
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; text-decoration: none; font-size: 1.2rem; transition: all 0.2s;
+            box-shadow: 0 0 10px rgba(168, 85, 247, 0.1);
         }
-        .back-btn:hover { background: rgba(255, 255, 255, 0.2); }
+        .back-btn:hover {
+            background: var(--neon-purple); color: #000; box-shadow: 0 0 20px var(--neon-purple);
+        }
 
         h2 {
-            font-size: 1.8rem; font-weight: 700;
-            background: linear-gradient(to right, #a855f7, #ec4899);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            font-size: 1.6rem; font-weight: 400; letter-spacing: 2px; text-transform: uppercase;
+            text-shadow: 2px 0 var(--neon-purple), -2px 0 var(--neon-blue); color: white;
         }
 
-        /* GRILLE */
+        /* --- GRILLE --- */
         .grid-menu { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 
         .folder-card {
-            background: rgba(30, 41, 59, 0.7);
-            border: 1px solid rgba(168, 85, 247, 0.2);
-            border-radius: 20px; padding: 1.5rem;
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-left: 3px solid var(--neon-purple); /* Accent violet par défaut ici */
+            border-radius: 4px; padding: 1.5rem;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            gap: 0.8rem; text-decoration: none; color: white;
-            transition: transform 0.2s, background 0.2s; aspect-ratio: 1 / 1;
+            gap: 0.8rem; text-decoration: none; color: #ccc;
+            transition: all 0.3s; aspect-ratio: 1 / 1; position: relative; overflow: hidden;
         }
-        .folder-card:active { transform: scale(0.95); }
-        .folder-card:hover { background: rgba(30, 41, 59, 1); border-color: #a855f7; transform: translateY(-3px); }
 
-        .folder-icon { font-size: 2rem; }
-        .folder-title { font-weight: 600; font-size: 0.95rem; text-align: center; }
-
-        /* Style spécial pour le binaire */
-        .binary-card {
-            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-            border: 1px solid rgba(255,255,255,0.1);
-            grid-column: span 2;
-            flex-direction: row;
-            aspect-ratio: auto;
-            padding: 1.2rem;
+        .folder-card::before {
+            content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: 0.5s;
         }
-        .binary-card .folder-title { font-size: 1.1rem; margin-left: 10px; }
+        .folder-card:hover::before { left: 100%; }
+        .folder-card:active { transform: scale(0.98); }
+        
+        .folder-card:hover {
+            background: rgba(168, 85, 247, 0.05);
+            border-color: var(--neon-purple); color: white;
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.2);
+            text-shadow: 0 0 5px var(--neon-purple);
+        }
 
-        footer { text-align: center; font-size: 0.7rem; color: #64748b; margin-top: auto; }
+        .folder-icon { font-size: 2rem; filter: drop-shadow(0 0 5px rgba(255,255,255,0.3)); }
+        
+        .folder-title {
+            font-family: 'Fira Code', monospace; font-weight: 600; font-size: 0.85rem;
+            text-align: center; text-transform: uppercase; letter-spacing: 1px;
+        }
+
+        .status-dot {
+            position: absolute; top: 10px; right: 10px; width: 6px; height: 6px;
+            border-radius: 50%; background-color: #333;
+        }
+        .folder-card:hover .status-dot { background-color: var(--neon-purple); box-shadow: 0 0 5px var(--neon-purple); }
+
+        footer {
+            text-align: center; font-size: 0.7rem; color: #555; margin-top: 2rem;
+            font-family: 'Fira Code', monospace; border-top: 1px solid #222; padding-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -80,84 +125,60 @@
     <div class="mobile-container">
         
         <header>
-            <a href="info.html" class="back-btn">←</a>
-            <h2>Ressources</h2>
+            <a href="info.html" class="back-btn">&lt;</a>
+            <h2>&gt;_ RESSOURCES</h2>
         </header>
 
         <div class="grid-menu">
             
-            <a href="I-autres-arithmetiquebinaire.html" class="folder-card ">
-                <span class="folder-icon">A</span>
-                <span class="folder-title">Arithmétique Binaire</span>
+            <a href="I-autres-arithmetiquebinaire.html" class="folder-card">
+                <div class="status-dot"></div>
+                <span class="folder-icon">01</span> 
+                <span class="folder-title">ARITHM.<br>BINAIRE</span>
             </a>
 
-            <a href="#" class="folder-card" style="opacity: 0.3; border-style: dashed;">
+            <a href="#" class="folder-card" style="opacity: 0.3; border-style: dashed; cursor: default; border-left-color: #555;">
+                <div class="status-dot"></div>
                 <span class="folder-icon">➕</span>
-                <span class="folder-title">plus tard</span>
+                <span class="folder-title">PENDING...</span>
             </a>
 
         </div>
 
-        <footer>
-            @2025 - Tristan PITON
-        </footer>
+        <footer>@2025 - Tristan PITON</footer>
 
     </div>
-<style>
-    /* L'écran noir qui recouvre tout au début */
-    #page-transition-overlay {
-        position: fixed;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background-color: #050505; /* Noir profond du thème */
-        z-index: 99999; /* Au-dessus de tout */
-        opacity: 1;
-        transition: opacity 0.4s ease-in-out; /* Durée de la transition */
-        pointer-events: none; /* Permet de cliquer si jamais ça bug */
-    }
-    
-    /* Classe ajoutée en JS pour rendre transparent */
-    #page-transition-overlay.hidden {
-        opacity: 0;
-    }
-</style>
 
-<div id="page-transition-overlay"></div>
-
-<script>
-    // 1. TRANSITION D'ENTRÉE (FADE IN)
-    window.addEventListener('load', () => {
-        const overlay = document.getElementById('page-transition-overlay');
-        if(overlay) {
-            // Petit délai pour être sûr que le navigateur a affiché le fond noir
-            setTimeout(() => {
-                overlay.classList.add('hidden');
-            }, 50);
+    <style>
+        #page-transition-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #050505; z-index: 99999; opacity: 1;
+            transition: opacity 0.4s ease-in-out; pointer-events: none;
         }
-    });
+        #page-transition-overlay.hidden { opacity: 0; }
+    </style>
 
-    // 2. TRANSITION DE SORTIE (FADE OUT)
-    document.querySelectorAll('a').forEach(link => {
-        link.addEventListener('click', function(e) {
-            const target = this.getAttribute('href');
-            
-            // On n'anime que les liens internes réels (pas les #, pas les liens externes)
-            if (target && target !== '#' && !target.startsWith('javascript') && this.target !== '_blank') {
-                e.preventDefault(); // Bloque le changement de page immédiat
-                
-                const overlay = document.getElementById('page-transition-overlay');
-                if(overlay) {
-                    overlay.classList.remove('hidden'); // Remet le noir
-                    
-                    // Attend la fin de l'animation (0.4s) avant de changer de page
-                    setTimeout(() => {
-                        window.location.href = target;
-                    }, 400); 
-                } else {
-                    window.location.href = target; // Sécurité si l'overlay n'existe pas
-                }
-            }
+    <div id="page-transition-overlay"></div>
+
+    <script>
+        window.addEventListener('load', () => {
+            const overlay = document.getElementById('page-transition-overlay');
+            if(overlay) { setTimeout(() => { overlay.classList.add('hidden'); }, 50); }
         });
-    });
-</script>
+
+        document.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                const target = this.getAttribute('href');
+                if (target && target !== '#' && !target.startsWith('javascript') && this.target !== '_blank') {
+                    e.preventDefault();
+                    const overlay = document.getElementById('page-transition-overlay');
+                    if(overlay) {
+                        overlay.classList.remove('hidden');
+                        setTimeout(() => { window.location.href = target; }, 400); 
+                    } else { window.location.href = target; }
+                }
+            });
+        });
+    </script>
 </body>
 </html>
