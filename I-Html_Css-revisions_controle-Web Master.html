@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>WebMaster Quiz - Cyber Terminal</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌩️</text></svg>">
+
+    <style>
+        /* --- THEME CYBER / EXAMEN --- */
+        :root {
+            --bg-color: #050505;
+            --grid-color: rgba(255, 0, 85, 0.05);
+            --card-bg: rgba(20, 10, 15, 0.95);
+            --neon-red: #ff0055;
+            --neon-blue: #00f3ff;
+            --neon-green: #00ff41;
+            --text-main: #e0e0e0;
+            --font-ui: 'Share Tech Mono', monospace;
+            --font-code: 'Fira Code', monospace;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-ui);
+            margin: 0; padding: 0;
+            height: 100vh; height: -webkit-fill-available;
+            display: flex; justify-content: center; align-items: center;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            overflow: hidden;
+            
+            /* Fond Grille */
+            background-image: 
+                linear-gradient(var(--grid-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        #network-canvas, #confetti-canvas {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;
+        }
+        #network-canvas { z-index: 0; opacity: 0.3; }
+        #confetti-canvas { z-index: 100; }
+
+        /* CONTENEUR PRINCIPAL */
+        .quiz-wrapper {
+            position: relative; z-index: 10; width: 100%; height: 100%;
+            display: flex; flex-direction: column; justify-content: center;
+            padding: 15px; max-width: 600px;
+        }
+
+        .quiz-card {
+            background: var(--card-bg);
+            border: 1px solid var(--neon-red);
+            border-radius: 4px; /* Angles vifs style terminal */
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(255, 0, 85, 0.15);
+            display: flex; flex-direction: column;
+            max-height: 95vh; overflow-y: auto; position: relative;
+            
+            /* Décoration coins */
+            clip-path: polygon(
+                0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 
+                0 100%
+            );
+        }
+        /* Bordure simulée pour le clip-path */
+        .quiz-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--neon-red);
+        }
+
+        /* HEADER */
+        .header-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px; border-bottom: 1px dashed var(--neon-red); padding-bottom: 10px;
+        }
+
+        .back-link {
+            text-decoration: none; color: var(--neon-red); font-size: 0.9rem;
+            border: 1px solid var(--neon-red); padding: 5px 10px;
+            transition: all 0.2s; text-transform: uppercase;
+        }
+        .back-link:hover { background: var(--neon-red); color: black; }
+
+        h1 {
+            margin: 0; font-size: 1.5rem; color: var(--neon-red);
+            text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 5px var(--neon-red);
+        }
+        
+        .subtitle { color: #888; font-size: 0.8rem; margin-top: 5px; text-align: center;}
+
+        /* BOUTON VIDEO */
+        .video-trigger-btn {
+            background: rgba(255, 0, 85, 0.1); border: 1px solid var(--neon-red);
+            color: var(--neon-red); padding: 12px; font-family: var(--font-ui);
+            text-transform: uppercase; cursor: pointer; width: 100%;
+            margin-bottom: 20px; transition: all 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        .video-trigger-btn:hover { background: var(--neon-red); color: black; box-shadow: 0 0 15px var(--neon-red); }
+
+        /* VIDEO MODAL */
+        .modal-overlay {
+            display: none; position: fixed; z-index: 200; left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.95); justify-content: center; align-items: center;
+        }
+        .modal-content {
+            width: 100%; max-width: 800px; border: 1px solid var(--neon-red);
+            background: black; padding: 5px; box-shadow: 0 0 30px rgba(255, 0, 85, 0.3);
+        }
+        video { width: 100%; height: auto; display: block; }
+        .close-modal {
+            position: absolute; top: 20px; right: 20px; color: var(--neon-red);
+            font-size: 40px; cursor: pointer; z-index: 201; line-height: 20px;
+        }
+
+        /* PROGRESS BAR */
+        .progress-container {
+            width: 100%; height: 4px; background: #333; margin-bottom: 20px;
+        }
+        .progress-bar { height: 100%; background: var(--neon-red); width: 0%; transition: width 0.3s ease; box-shadow: 0 0 10px var(--neon-red); }
+
+        /* QUESTION */
+        .question-text {
+            font-size: 1.1rem; color: white; margin-bottom: 20px;
+            border-left: 3px solid var(--neon-red); padding-left: 15px; line-height: 1.4;
+        }
+        code { font-family: var(--font-code); color: var(--neon-blue); background: rgba(0, 243, 255, 0.1); padding: 2px 5px; }
+
+        /* OPTIONS */
+        #options { display: flex; flex-direction: column; gap: 10px; }
+
+        .option-btn {
+            width: 100%; padding: 12px 15px; background: rgba(255,255,255,0.05);
+            border: 1px solid #444; color: #ccc; font-family: var(--font-ui); font-size: 1rem;
+            text-align: left; cursor: pointer; transition: all 0.2s; position: relative;
+        }
+        .option-btn:hover:not(:disabled) { border-color: var(--neon-red); color: white; background: rgba(255, 0, 85, 0.1); }
+        
+        .option-btn.correct { background: rgba(0, 255, 65, 0.2); border-color: var(--neon-green); color: var(--neon-green); }
+        .option-btn.wrong { background: rgba(255, 0, 85, 0.2); border-color: var(--neon-red); color: var(--neon-red); }
+
+        /* FEEDBACK */
+        .feedback {
+            margin-top: 20px; padding: 15px; border: 1px solid transparent; display: none;
+            font-size: 0.9rem; animation: slideUp 0.3s ease;
+        }
+        .feedback.correct-fb { border-color: var(--neon-green); background: rgba(0, 255, 65, 0.05); color: var(--neon-green); }
+        .feedback.wrong-fb { border-color: var(--neon-red); background: rgba(255, 0, 85, 0.05); color: var(--neon-red); }
+
+        /* NEXT BUTTON */
+        .next-btn {
+            display: none; width: 100%; padding: 15px; margin-top: 20px;
+            background: var(--neon-blue); color: black; border: none;
+            font-family: var(--font-code); font-weight: bold; text-transform: uppercase;
+            cursor: pointer; box-shadow: 0 0 15px var(--neon-blue);
+        }
+        .next-btn:hover { background: white; box-shadow: 0 0 25px white; }
+
+        /* SCORE BOARD */
+        .score-board { text-align: center; display: none; padding: 20px; animation: fadeIn 0.5s; }
+        .final-score { font-size: 3rem; color: var(--neon-green); text-shadow: 0 0 20px var(--neon-green); margin: 20px 0; font-family: var(--font-code); }
+        
+        .restart-btn {
+            background: transparent; border: 1px solid var(--neon-red); color: var(--neon-red);
+            padding: 10px 30px; font-family: var(--font-ui); cursor: pointer;
+            text-transform: uppercase; margin-top: 20px; transition: 0.2s; display: inline-block;
+        }
+        .restart-btn:hover { background: var(--neon-red); color: black; box-shadow: 0 0 15px var(--neon-red); }
+
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    </style>
+</head>
+<body>
+
+    <canvas id="network-canvas"></canvas>
+    <canvas id="confetti-canvas"></canvas>
+
+    <div id="video-modal" class="modal-overlay">
+        <span class="close-modal">✖</span>
+        <div class="modal-content">
+            <video id="lesson-video" controls playsinline>
+                <source src="Du_Clic_au_code.mp4" type="video/mp4">
+                [ERREUR] : Vidéo non trouvée.
+            </video>
+        </div>
+    </div>
+
+    <div class="quiz-wrapper">
+        <div class="quiz-card">
+            
+            <div class="header-bar">
+                <a href="I-Html_Css-revisions_controle.html" class="back-link">&lt; RETOUR</a>
+                <div style="text-align:right;">
+                    <h1>WEB_MASTER</h1>
+                    <div class="subtitle">STATUS: EXAM_MODE</div>
+                </div>
+            </div>
+
+            <button id="open-video-btn" class="video-trigger-btn">
+                <span>▶ ACCESS_VIDEO_DATA</span>
+            </button>
+
+            <div id="quiz-box">
+                <div class="progress-container">
+                    <div class="progress-bar" id="progress-bar"></div>
+                </div>
+                
+                <div class="question-text" id="question">INITIALISATION...</div>
+                <div id="options"></div>
+                
+                <div id="feedback" class="feedback"></div>
+                <button id="next-btn" class="next-btn">CONFIRMER & SUIVANT >></button>
+            </div>
+
+            <div id="result-box" class="score-board">
+                <h2 style="color:var(--text-main)">SESSION_COMPLETE</h2>
+                <div class="final-score" id="score-display">0 / 0</div>
+                <p id="result-message" style="color:var(--text-dim)"></p>
+                
+                <button class="restart-btn" onclick="restartQuiz()">RESTART_SYSTEM</button>
+                <br><br>
+                <a href="I-Html_Css-revisions_controle.html" class="restart-btn" style="border-color:var(--neon-blue); color:var(--neon-blue); text-decoration:none;">EXIT_TO_MENU</a>
+            </div>
+        </div>
+    </div>
+
+<script>
+    /* --- GESTION VIDEO --- */
+    const modal = document.getElementById('video-modal');
+    const openBtn = document.getElementById('open-video-btn');
+    const closeBtn = document.getElementsByClassName("close-modal")[0];
+    const videoPlayer = document.getElementById('lesson-video');
+
+    openBtn.onclick = function() { modal.style.display = "flex"; }
+    closeBtn.onclick = function() { modal.style.display = "none"; videoPlayer.pause(); }
+    window.onclick = function(event) { if (event.target == modal) { modal.style.display = "none"; videoPlayer.pause(); } }
+
+    /* --- ANIMATION BACKGROUND (Particules Rouges) --- */
+    const canvas = document.getElementById('network-canvas');
+    const ctx = canvas.getContext('2d');
+    let particlesArray;
+    
+    function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; initParticles(); }
+    window.addEventListener('resize', resizeCanvas);
+    
+    class Particle {
+        constructor() {
+            this.x = Math.random() * canvas.width; this.y = Math.random() * canvas.height;
+            this.directionX = (Math.random() * 0.4) - 0.2; this.directionY = (Math.random() * 0.4) - 0.2;
+            this.size = Math.random() * 2 + 1; 
+            this.color = 'rgba(255, 0, 85, 0.4)'; /* Rouge Néon */
+        }
+        update() {
+            if (this.x > canvas.width || this.x < 0) this.directionX = -this.directionX;
+            if (this.y > canvas.height || this.y < 0) this.directionY = -this.directionY;
+            this.x += this.directionX; this.y += this.directionY;
+            ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false); ctx.fillStyle = this.color; ctx.fill();
+        }
+    }
+    function initParticles() { particlesArray = []; let n = (canvas.height * canvas.width) / 20000; for (let i = 0; i < n; i++) particlesArray.push(new Particle()); }
+    function animateNetwork() { requestAnimationFrame(animateNetwork); ctx.clearRect(0, 0, canvas.width, canvas.height); particlesArray.forEach(p => p.update()); }
+    resizeCanvas(); animateNetwork();
+
+    /* --- CONFETTI (Victoire) --- */
+    const confCanvas = document.getElementById('confetti-canvas'); const confCtx = confCanvas.getContext('2d'); let confettiList = [];
+    function launchConfetti() { 
+        confCanvas.width = window.innerWidth; confCanvas.height = window.innerHeight; 
+        const colors = ['#ff0055', '#00f3ff', '#00ff41']; 
+        for (let i = 0; i < 150; i++) { 
+            confettiList.push({ 
+                x: Math.random() * confCanvas.width, y: Math.random() * confCanvas.height - confCanvas.height, 
+                color: colors[Math.floor(Math.random() * colors.length)], 
+                size: Math.random() * 5 + 2, speedY: Math.random() * 3 + 2, speedX: Math.random() * 2 - 1, 
+                rotation: Math.random() * 360, rotationSpeed: Math.random() * 10 - 5 
+            }); 
+        } 
+        animateConfetti(); 
+    }
+    function animateConfetti() { 
+        confCtx.clearRect(0, 0, confCanvas.width, confCanvas.height); 
+        let active = false; 
+        confettiList.forEach(p => { 
+            p.y += p.speedY; p.x += p.speedX; p.rotation += p.rotationSpeed; 
+            if (p.y < confCanvas.height) active = true; 
+            confCtx.save(); confCtx.translate(p.x, p.y); confCtx.rotate(p.rotation * Math.PI / 180); 
+            confCtx.fillStyle = p.color; confCtx.fillRect(-p.size/2, -p.size/2, p.size, p.size); 
+            confCtx.restore(); 
+        }); 
+        if (active) requestAnimationFrame(animateConfetti); 
+    }
+
+    /* --- BASE DE DONNÉES QUIZ --- */
+    const questionsDB = [
+        { q: "Rôle du <strong>navigateur</strong> ?", options: ["Héberger le site", "Interpréter HTML/CSS", "Gérer le Wifi", "Base de données"], a: 1, info: "Il transforme le code en visuel." },
+        { q: "Rôle du <strong>Serveur</strong> ?", options: ["Demander la page", "Stocker les fichiers 24/7", "Fournir internet", "Écrire le code"], a: 1, info: "Il stocke et sert les fichiers." },
+        { q: "Qu'est-ce qu'un <strong>protocole</strong> ?", options: ["Un langage code", "Un antivirus", "Règles de communication", "Une adresse"], a: 2, info: "Ex: HTTP, FTP." },
+        { q: "Qui définit les standards (HTML/CSS) ?", options: ["Google", "Apple", "Le W3C", "Microsoft"], a: 2, info: "World Wide Web Consortium." },
+        { q: "Un <strong>hébergeur</strong> sert à ?", options: ["Louer de l'espace disque en ligne", "Créer le design", "Référencer sur Google", "Réparer le PC"], a: 0, info: "Pour rendre le site accessible." },
+        { q: "Signification <strong>URL</strong> ?", options: ["Universal Resource Link", "Uniform Resource Locator", "Unified Rapid Loading", "Ultra Link"], a: 1, info: "L'adresse unique d'une ressource." },
+        { q: "Rôle de <strong>HTML</strong> ?", options: ["Le Style (Forme)", "La Structure (Fond)", "Le Transfert", "L'Animation"], a: 1, info: "C'est le squelette de la page." },
+        { q: "Balise <strong>orpheline</strong> ?", options: ["&lt;h1&gt;", "&lt;p&gt;", "&lt;img&gt;", "&lt;div&gt;"], a: 2, info: "Pas de balise fermante." },
+        { q: "Dans <code>&lt;a href='...'&gt;</code>, href est ?", options: ["Une balise", "Un attribut", "Une valeur", "Du texte"], a: 1, info: "Il précise la cible du lien." },
+        { q: "Contenu <strong>visible</strong> de la page ?", options: ["&lt;head&gt;", "&lt;html&gt;", "&lt;body&gt;", "&lt;footer&gt;"], a: 2, info: "Tout ce qu'on voit est dans le body." },
+        { q: "Créer un <strong>lien</strong> ?", options: ["&lt;link&gt;", "&lt;a&gt;", "&lt;url&gt;", "&lt;go&gt;"], a: 1, info: "Balise Anchor (Ancre)." },
+        { q: "Liste à puces <strong>non numérotée</strong> ?", options: ["&lt;ol&gt;", "&lt;ul&gt;", "&lt;li&gt;", "&lt;dl&gt;"], a: 1, info: "Unordered List." },
+        { q: "Tableau : Ligne ?", options: ["&lt;table&gt;", "&lt;tr&gt;", "&lt;td&gt;", "&lt;th&gt;"], a: 1, info: "Table Row." },
+        { q: "Rôle de <strong>CSS</strong> ?", options: ["Structure", "Style et mise en forme", "Sécurité", "Liens"], a: 1, info: "Cascading Style Sheets." },
+        { q: "<code>h2 { color: red; }</code> : h2 est ?", options: ["Propriété", "Valeur", "Sélecteur", "Balise"], a: 2, info: "Il sélectionne l'élément." },
+        { q: "Cibler une <strong>classe</strong> CSS ?", options: ["#nom", "nom", ".nom", "*nom"], a: 2, info: "Le point désigne une classe." },
+        { q: "Lier le fichier CSS ?", options: ["Dans &lt;body&gt;", "Fin du fichier", "Dans &lt;head&gt;", "N'importe où"], a: 2, info: "Avec la balise &lt;link&gt;." },
+        { q: "Outil pour coder ?", options: ["Word", "Éditeur de code", "Paint", "Excel"], a: 1, info: "Ex: VS Code, Sublime." },
+        { q: "Protocole <strong>FTP</strong> ?", options: ["Afficher le site", "Transférer des fichiers", "Envoyer des emails", "Chatter"], a: 1, info: "File Transfer Protocol." },
+        { q: "Logiciel client FTP ?", options: ["Chrome", "Photoshop", "FileZilla", "Skype"], a: 2, info: "Le plus connu pour les transferts." }
+    ];
+
+    /* --- LOGIQUE QUIZ --- */
+    let currentQ = 0; let score = 0;
+
+    function loadQ() {
+        document.getElementById("feedback").style.display = "none"; 
+        document.getElementById("next-btn").style.display = "none";
+        
+        const q = questionsDB[currentQ]; 
+        document.getElementById("progress-bar").style.width = `${((currentQ)/questionsDB.length)*100}%`;
+        
+        document.getElementById("question").innerHTML = q.q;
+        const opts = document.getElementById("options"); 
+        opts.innerHTML = "";
+        
+        q.options.forEach((opt, idx) => { 
+            const btn = document.createElement("button"); 
+            btn.className = "option-btn"; 
+            btn.innerHTML = `> ${opt}`; // Style terminal
+            btn.onclick = () => check(idx, btn); 
+            opts.appendChild(btn); 
+        });
+    }
+
+    function check(idx, btn) {
+        const q = questionsDB[currentQ]; 
+        const fb = document.getElementById("feedback"); 
+        
+        document.querySelectorAll(".option-btn").forEach(b => b.disabled = true);
+        
+        if (idx === q.a) { 
+            btn.classList.add("correct"); 
+            fb.className = "feedback correct-fb"; 
+            fb.innerHTML = "[SUCCESS] : " + q.info; 
+            score++; 
+        } else { 
+            btn.classList.add("wrong"); 
+            document.querySelectorAll(".option-btn")[q.a].classList.add("correct"); 
+            fb.className = "feedback wrong-fb"; 
+            fb.innerHTML = "[ERROR] : " + q.info; 
+        }
+        
+        fb.style.display = "block"; 
+        const nextBtn = document.getElementById("next-btn");
+        nextBtn.style.display = "block"; 
+        nextBtn.onclick = nextQuestion; // Réassigne le clic
+        
+        setTimeout(() => nextBtn.scrollIntoView({behavior: "smooth", block: "nearest"}), 100);
+    }
+
+    function nextQuestion() { 
+        currentQ++; 
+        if (currentQ < questionsDB.length) loadQ(); 
+        else result(); 
+    }
+
+    function result() {
+        document.getElementById("quiz-box").style.display = "none"; 
+        document.getElementById("result-box").style.display = "block";
+        document.getElementById("score-display").innerText = `${score} / ${questionsDB.length}`; 
+        
+        const pct = (score / questionsDB.length) * 100;
+        let msg = ""; 
+        if (pct >= 80) { msg = "> SYSTEM: EXCELLENT WORK"; launchConfetti(); } 
+        else if (pct >= 50) { msg = "> SYSTEM: GOOD JOB"; } 
+        else { msg = "> SYSTEM: REVISION NEEDED"; } 
+        
+        document.getElementById("result-message").innerText = msg;
+        document.getElementById("progress-bar").style.width = "100%";
+    }
+
+    function restartQuiz() { 
+        currentQ = 0; score = 0; 
+        document.getElementById("result-box").style.display = "none"; 
+        document.getElementById("quiz-box").style.display = "block"; 
+        loadQ(); 
+    }
+
+    // Init
+    loadQ();
+
+</script>
+<style>
+    /* L'écran noir qui recouvre tout au début */
+    #page-transition-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background-color: #050505; /* Noir profond du thème */
+        z-index: 99999; /* Au-dessus de tout */
+        opacity: 1;
+        transition: opacity 0.4s ease-in-out; /* Durée de la transition */
+        pointer-events: none; /* Permet de cliquer si jamais ça bug */
+    }
+    
+    /* Classe ajoutée en JS pour rendre transparent */
+    #page-transition-overlay.hidden {
+        opacity: 0;
+    }
+</style>
+
+<div id="page-transition-overlay"></div>
+
+<script>
+    // 1. TRANSITION D'ENTRÉE (FADE IN)
+    window.addEventListener('load', () => {
+        const overlay = document.getElementById('page-transition-overlay');
+        if(overlay) {
+            // Petit délai pour être sûr que le navigateur a affiché le fond noir
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+            }, 50);
+        }
+    });
+
+    // 2. TRANSITION DE SORTIE (FADE OUT)
+    document.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', function(e) {
+            const target = this.getAttribute('href');
+            
+            // On n'anime que les liens internes réels (pas les #, pas les liens externes)
+            if (target && target !== '#' && !target.startsWith('javascript') && this.target !== '_blank') {
+                e.preventDefault(); // Bloque le changement de page immédiat
+                
+                const overlay = document.getElementById('page-transition-overlay');
+                if(overlay) {
+                    overlay.classList.remove('hidden'); // Remet le noir
+                    
+                    // Attend la fin de l'animation (0.4s) avant de changer de page
+                    setTimeout(() => {
+                        window.location.href = target;
+                    }, 400); 
+                } else {
+                    window.location.href = target; // Sécurité si l'overlay n'existe pas
+                }
+            }
+        });
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,278 @@
+<html lang="fr"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BTS-CIEL - Réseaux</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&amp;family=Fira+Code:wght@400;600&amp;display=swap" rel="stylesheet">
+        <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22&gt;&lt;text y=%22.9em%22 font-size=%2290%22&gt;🌩️&lt;/text&gt;&lt;/svg&gt;">
+    
+    
+    <style>
+        /* --- THEME HIGH-TECH / CYBER (Identique à info.html) --- */
+        :root {
+            --bg-color: #050505;
+            --grid-color: rgba(0, 255, 65, 0.05);
+            --card-bg: rgba(10, 20, 30, 0.8);
+            --neon-green: #00ff41;
+            --neon-blue: #00f3ff;
+            --neon-purple: #bd00ff; /* Ajout pour varier */
+            --text-main: #e0e0e0;
+            --font-tech: 'Share Tech Mono', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-tech);
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding-top: 2rem;
+            
+            /* Fond "Grille Informatique" */
+            background-image: 
+                linear-gradient(var(--grid-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px),
+                radial-gradient(circle at 50% 0%, rgba(0, 243, 255, 0.15) 0%, transparent 60%);
+            background-size: 40px 40px, 40px 40px, 100% 100%;
+        }
+
+        .mobile-container {
+            width: 100%;
+            max-width: 400px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            padding-bottom: 4rem;
+        }
+
+        /* --- HEADER TERMINAL --- */
+        header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+            border-bottom: 1px solid var(--neon-blue);
+            padding-bottom: 15px;
+            position: relative;
+        }
+
+        header::after {
+            content: 'NET_MODULE_LOADED'; /* Petit changement de texte */
+            position: absolute;
+            bottom: -20px;
+            right: 0;
+            font-size: 0.6rem;
+            color: var(--neon-blue);
+            opacity: 0.7;
+        }
+
+        .back-btn {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-blue);
+            width: 45px;
+            height: 45px;
+            border-radius: 4px; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 1.2rem;
+            transition: all 0.2s;
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.1);
+        }
+        .back-btn:hover {
+            background: var(--neon-blue);
+            color: #000;
+            box-shadow: 0 0 20px var(--neon-blue);
+        }
+
+        h2 {
+            font-size: 1.6rem;
+            font-weight: 400;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-shadow: 2px 0 var(--neon-green), -2px 0 var(--neon-blue);
+            color: white;
+        }
+
+        /* --- GRILLE --- */
+        .grid-menu {
+            display: grid;
+            grid-template-columns: 1fr; /* 1 colonne pour les liens (plus lisible pour des listes) */
+            gap: 1rem;
+        }
+
+        .folder-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-left: 3px solid var(--neon-blue); /* Par défaut bleu pour le réseau */
+            
+            border-radius: 4px;
+            padding: 1.2rem;
+            display: flex;
+            flex-direction: row; /* En ligne pour les liens */
+            align-items: center;
+            justify-content: flex-start;
+            gap: 1rem;
+            
+            text-decoration: none;
+            color: #ccc;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Effet Scanner */
+        .folder-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: 0.5s;
+        }
+        .folder-card:hover::before { left: 100%; }
+        .folder-card:active { transform: scale(0.98); }
+        
+        /* Style au survol spécifique Réseau */
+        .folder-card:hover {
+            background: rgba(0, 243, 255, 0.05);
+            border-color: var(--neon-blue);
+            color: white;
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
+            text-shadow: 0 0 5px var(--neon-blue);
+        }
+
+        .folder-icon { font-size: 1.5rem; filter: drop-shadow(0 0 5px rgba(255,255,255,0.3)); }
+        
+        .folder-title {
+            font-family: 'Fira Code', monospace;
+            font-weight: 600;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .link-arrow {
+            margin-left: auto; /* Pousse la flèche à droite */
+            opacity: 0.5;
+            font-family: sans-serif;
+        }
+        .folder-card:hover .link-arrow { opacity: 1; transform: translateX(5px); transition: 0.2s; }
+
+        footer {
+            text-align: center;
+            font-size: 0.7rem;
+            color: #555;
+            margin-top: 2rem;
+            font-family: 'Fira Code', monospace;
+            border-top: 1px solid #222;
+            padding-top: 10px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="mobile-container">
+        
+        <header>
+            <a href="info.html" class="back-btn">&lt;</a>
+            <h2>NETWORK_HUB</h2>
+        </header>
+
+        <div class="grid-menu">
+            
+            <a href="#" class="folder-card" target="_blank"style="opacity: 0.3; border-style: dashed; cursor: default;">
+                <span class="folder-icon">📡</span>
+                <span class="folder-title">Modèle OSI</span>
+                <span class="link-arrow">➜</span>
+            </a>
+
+            <a href="I-Reseau-IP.html" class="folder-card" target="_self">
+                <span class="folder-icon">🏷️</span>
+                <span class="folder-title">Adressage IP</span>
+                <span class="link-arrow">➜</span>
+            </a>
+
+            <a href="#" class="folder-card" target="_blank"style="opacity: 0.3; border-style: dashed; cursor: default;">
+                <span class="folder-icon">🛡️</span>
+                <span class="folder-title">Cisco / Switch</span>
+                <span class="link-arrow">➜</span>
+            </a>
+
+            <a href="#" class="folder-card" target="_blank"style="opacity: 0.3; border-style: dashed; cursor: default;">
+                <span class="folder-icon">💾</span>
+                <span class="folder-title">Protocoles (TCP/UDP)</span>
+                <span class="link-arrow">➜</span>
+            </a>
+
+
+        </div>
+
+        <footer>othor : Tristan PITON</footer>
+
+    </div>
+
+<style>
+    /* L'écran noir qui recouvre tout au début */
+    #page-transition-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background-color: #050505; /* Noir profond du thème */
+        z-index: 99999; /* Au-dessus de tout */
+        opacity: 1;
+        transition: opacity 0.4s ease-in-out; /* Durée de la transition */
+        pointer-events: none; /* Permet de cliquer si jamais ça bug */
+    }
+    
+    /* Classe ajoutée en JS pour rendre transparent */
+    #page-transition-overlay.hidden {
+        opacity: 0;
+    }
+</style>
+
+<div id="page-transition-overlay"></div>
+
+<script>
+    // 1. TRANSITION D'ENTRÉE (FADE IN)
+    window.addEventListener('load', () => {
+        const overlay = document.getElementById('page-transition-overlay');
+        if(overlay) {
+            // Petit délai pour être sûr que le navigateur a affiché le fond noir
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+            }, 50);
+        }
+    });
+
+    // 2. TRANSITION DE SORTIE (FADE OUT)
+    document.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', function(e) {
+            const target = this.getAttribute('href');
+            
+            // On n'anime que les liens internes réels (pas les #, pas les liens externes)
+            if (target && target !== '#' && !target.startsWith('javascript') && this.target !== '_blank') {
+                e.preventDefault(); // Bloque le changement de page immédiat
+                
+                const overlay = document.getElementById('page-transition-overlay');
+                if(overlay) {
+                    overlay.classList.remove('hidden'); // Remet le noir
+                    
+                    // Attend la fin de l'animation (0.4s) avant de changer de page
+                    setTimeout(() => {
+                        window.location.href = target;
+                    }, 400); 
+                } else {
+                    window.location.href = target; // Sécurité si l'overlay n'existe pas
+                }
+            }
+        });
+    });
+</script>
+</body></html>

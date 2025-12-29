@@ -1,0 +1,760 @@
+<html lang="fr"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Eng Master">
+    <link rel="apple-touch-icon" href="https://img.icons8.com/color/96/000000/learning.png">
+
+    <title>English Master iOS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&amp;display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌩️</text></svg>">
+    <style>
+        /* --- DESIGN GLOBAL --- */
+        :root {
+            --primary-color: #6c5ce7;
+            --secondary-color: #a29bfe;
+            --success-color: #00b894;
+            --error-color: #ff7675;
+            --text-dark: #2d3436;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(45deg, #4e54c8, #8f94fb);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            min-height: -webkit-fill-available; 
+            margin: 0;
+            color: var(--text-dark);
+            overscroll-behavior: none;
+        }
+
+        /* --- BACKGROUND ANIMÉ --- */
+        .circles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; z-index: 0; pointer-events: none; }
+        .circles li { position: absolute; display: block; list-style: none; width: 20px; height: 20px; background: rgba(255, 255, 255, 0.2); animation: animate 25s linear infinite; bottom: -150px; border-radius: 20%; }
+        .circles li:nth-child(1){ left: 25%; width: 80px; height: 80px; animation-delay: 0s; }
+        .circles li:nth-child(2){ left: 10%; width: 20px; height: 20px; animation-delay: 2s; animation-duration: 12s; }
+        .circles li:nth-child(3){ left: 70%; width: 20px; height: 20px; animation-delay: 4s; }
+        @keyframes animate { 0%{ transform: translateY(0) rotate(0deg); opacity: 1; border-radius: 0; } 100%{ transform: translateY(-1000px) rotate(720deg); opacity: 0; border-radius: 50%; } }
+
+        /* --- CONTENEUR --- */
+        .container {
+            position: relative; z-index: 10; background-color: rgba(255, 255, 255, 0.96);
+            padding: 25px 20px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            width: 90%; max-width: 500px; text-align: center;
+            max-height: 90vh; overflow-y: auto;
+        }
+
+        h1 { color: #4834d4; font-weight: 700; margin: 5px 0; font-size: 1.6em; }
+        h2 { color: #636e72; font-weight: 400; font-size: 0.9em; margin-bottom: 15px; }
+        h3 { color: #2d3436; font-size: 1em; margin: 15px 0 5px 0; text-align: left; padding-left: 5px; border-left: 4px solid var(--primary-color); line-height: 1.2em; padding-bottom: 2px;}
+
+        /* --- MENU --- */
+        .menu-buttons { display: flex; flex-direction: column; gap: 8px; }
+        
+        .mode-btn {
+            background: white; border: 2px solid transparent; padding: 12px; font-size: 0.9em;
+            color: var(--text-dark); border-radius: 12px; cursor: pointer; font-weight: 600;
+            font-family: 'Poppins', sans-serif; box-shadow: 0 3px 5px rgba(0,0,0,0.05); 
+            -webkit-tap-highlight-color: transparent;
+            transition: transform 0.1s;
+        }
+        .mode-btn:active { transform: scale(0.98); background: #f1f2f6; }
+        
+        .mode-btn.resume {
+            background: linear-gradient(135deg, #fdcb6e 0%, #e17055 100%);
+            color: white; border: none; padding: 15px; margin-bottom: 10px;
+        }
+
+        .mode-btn.errors {
+            background: linear-gradient(135deg, #ff7675 0%, #d63031 100%);
+            color: white; border: none; padding: 15px;
+        }
+
+        /* Styles spécifiques pour les sections */
+        .split-container { display: flex; gap: 8px; }
+        .split-btn { flex: 1; }
+        
+        .btn-write { background: #e1e6fa; color: #4834d4; }
+        .btn-quiz { background: #dff9fb; color: #130f40; }
+
+        /* --- JEU --- */
+        .game-area { display: none; }
+        .header-game { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        
+        /* MODIFICATION ICI : Style ajusté pour le texte */
+        .home-btn { 
+            font-size: 0.9em; 
+            font-weight: 600;
+            color: var(--primary-color);
+            cursor: pointer; 
+            padding: 5px; 
+            transition: transform 0.2s;
+            -webkit-tap-highlight-color: transparent;
+            display: flex;
+            align-items: center;
+        }
+        .home-btn:active { transform: scale(0.95); }
+
+        .progress-bar-bg { background: #dfe6e9; border-radius: 10px; height: 8px; width: 100%; margin: 10px 0 15px 0; overflow: hidden; }
+        .progress-bar-fill { background: var(--primary-color); height: 100%; width: 0%; transition: width 0.3s; }
+        
+        .question-card { 
+            background: white; padding: 25px 10px; border-radius: 15px; margin-bottom: 20px; 
+            font-size: 1.5em; font-weight: 700; color: #2d3436; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05); border: 2px solid transparent;
+        }
+        .anim-pop { animation: popSuccess 0.4s ease; border-color: var(--success-color); }
+        .anim-shake { animation: shakeError 0.4s ease; border-color: var(--error-color); }
+        
+        @keyframes popSuccess { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        @keyframes shakeError { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+
+        input[type="text"] { 
+            width: 85%; padding: 15px; font-size: 16px; 
+            border: 2px solid #dfe6e9; border-radius: 12px; outline: none; 
+            margin-bottom: 15px; font-family: 'Poppins', sans-serif; 
+            -webkit-appearance: none; 
+        }
+        input[type="text"]:focus { border-color: var(--primary-color); }
+
+        .btn-action { 
+            padding: 15px 0; width: 100%; border: none; border-radius: 12px; 
+            font-size: 1em; cursor: pointer; color: white; font-weight: 600; 
+            font-family: 'Poppins', sans-serif; margin-bottom: 10px;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn-valid { background-color: var(--success-color); }
+        .btn-giveup { background-color: var(--error-color); display: none; margin-top: 5px;}
+        .btn-next { background-color: var(--primary-color); display: none; margin-top: 15px; }
+
+        .feedback { margin-top: 15px; padding: 15px; border-radius: 10px; display: none; font-size: 0.95em; line-height: 1.4em;}
+        .feedback.correct { background: #d1f7ea; color: #00947e; }
+        .feedback.almost { background: #fff3cd; color: #856404; }
+        .feedback.incorrect { background: #ffeaea; color: #d63031; }
+
+        #quiz-area { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .quiz-btn { 
+            padding: 15px 5px; border: 2px solid #dfe6e9; border-radius: 12px; 
+            cursor: pointer; background: white; font-weight: 500; 
+            font-size: 0.85em; min-height: 55px; display: flex; align-items: center; justify-content: center;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .quiz-btn:active { background: #f0f0ff; transform: scale(0.95); }
+
+        .back-menu { display:block; margin-top:20px; color:#b2bec3; font-size:0.8em; text-decoration:none; padding: 10px; }
+
+    </style>
+</head>
+<body>
+
+    <ul class="circles"><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li></ul>
+
+<div class="container">
+    
+    <div id="menu">
+        <div style="font-size: 3em; margin-bottom: 5px;">💾</div>
+        <h1>Mots Anglais 2</h1>
+        <h2>Working Conditions</h2>
+
+        <div class="menu-buttons">
+            <button id="btn-resume-session" class="mode-btn resume" onclick="restaurerPartieEnCours()">⏳ Reprendre ma partie</button>
+            
+            <button id="btn-review-errors" class="mode-btn errors" onclick="lancerPartie('review_errors', false)">
+                🛑 Revoir mes erreurs
+            </button>
+            
+            <h3✍️ Écriture</h3>
+            <div class="split-container">
+                <button class="mode-btn split-btn btn-write" onclick="lancerPartie('write_part1', false)">
+                    Partie 1<br><span style="font-size:0.7em; font-weight:400;">(1 - 20)</span>
+                </button>
+                <button class="mode-btn split-btn btn-write" onclick="lancerPartie('write_part2', false)">
+                    Partie 2<br><span style="font-size:0.7em; font-weight:400;">(21 - Fin)</span>
+                </button>
+            </div>
+            <button class="mode-btn btn-write" onclick="lancerPartie('write_all', false)">🔄 Tout (Aléatoire)</button>
+            
+            <h3>❓ Quiz (QCM)</h3>
+            <div class="split-container">
+                <button class="mode-btn split-btn btn-quiz" onclick="lancerPartie('quiz_part1', false)">
+                    Partie 1<br><span style="font-size:0.7em; font-weight:400;">(1 - 20)</span>
+                </button>
+                <button class="mode-btn split-btn btn-quiz" onclick="lancerPartie('quiz_part2', false)">
+                    Partie 2<br><span style="font-size:0.7em; font-weight:400;">(21 - Fin)</span>
+                </button>
+            </div>
+            <button class="mode-btn btn-quiz" onclick="lancerPartie('quiz_all', false)">🎲 Tout (Aléatoire)</button>
+
+        </div>
+        
+        <a href="anglais.html" class="back-menu" style="margin-top: 20px;">← Retour au menu d'anglais</a>
+
+        <p style="font-size: 0.7em; color: #b2bec3; margin-top: 10px;">
+            Optimisé pour iPhone &amp; iPad.<br>Sauvegarde automatique.
+        </p>
+    </div>
+
+    <div id="game" class="game-area">
+        <div class="header-game">
+            <span class="home-btn" onclick="retourMenu()">← Retour menu</span>
+            <span id="mode-label" style="font-weight:bold; color:#6c5ce7; font-size: 0.9em;">Jeu</span>
+            <span id="counter" style="color:#aaa; font-weight:bold; font-size: 0.9em;">1 / 20</span>
+        </div>
+
+        <div class="progress-bar-bg"><div id="progress-fill" class="progress-bar-fill"></div></div>
+
+        <div id="direction-label" style="background:#e1e6fa; color:#6c5ce7; padding:4px 12px; border-radius:15px; font-size:0.75em; font-weight:600; display:inline-block; margin-bottom:10px;">Traduction</div>
+        
+        <div class="question-card" id="q-text">...</div>
+
+        <div id="input-area">
+            <input type="text" id="user-input" placeholder="Votre réponse..." autocomplete="off" autocapitalize="none" spellcheck="false">
+            <div style="display:flex; gap:10px;">
+                <button class="btn-action btn-valid" id="btn-check" onclick="verifier()">Valider</button>
+                <button class="btn-action btn-giveup" id="btn-giveup" onclick="abandonner()">Abandon</button>
+            </div>
+        </div>
+
+        <div id="quiz-area"></div>
+
+        <div id="feedback" class="feedback"></div>
+        <button id="btn-next" class="btn-action btn-next" onclick="suivant()">Suivant ➜</button>
+
+    </div>
+
+</div>
+
+<script>
+    /* --- DONNEES --- */
+    const fullList = [
+        { id: 1, en: "Employee", fr: "employé" },
+        { id: 2, en: "Employer", fr: "employeur" },
+        { id: 3, en: "Worker", fr: "travailleur, ouvrier" },
+        { id: 4, en: "to go on a training", fr: "suivre une formation" },
+        { id: 5, en: "Intern (US) / Trainee (UK)", fr: "un stagiaire" },
+        { id: 6, en: "Full-time job", fr: "travail à plein temps" },
+        { id: 7, en: "Part-time job", fr: "travail à temps partiel" },
+        { id: 8, en: "Shifts", fr: "poste (temps de travail)" },
+        { id: 9, en: "My shift starts at 8", fr: "Mon poste commence à 8" },
+        { id: 10, en: "Overtime", fr: "heures supplémentaires" },
+        { id: 11, en: "Flexitime", fr: "horaires flexibles" },
+        { id: 12, en: "Schedule", fr: "emploi du temps" },
+        { id: 13, en: "Working times", fr: "horaires de travail" },
+        { id: 14, en: "to do overtime", fr: "faire des heures supplémentaires" },
+        { id: 15, en: "Occupation", fr: "métier, activité professionnelle" },
+        { id: 16, en: "To earn your living", fr: "gagner sa vie" },
+        { id: 17, en: "To get a pay rise", fr: "obtenir une augmentation de salaire" },
+        { id: 18, en: "to get promoted", fr: "obtenir une promotion" },
+        { id: 19, en: "Maternity leave", fr: "congé maternité" },
+        { id: 20, en: "to be on maternity leave", fr: "être en congé maternité" },
+        { id: 21, en: "Sick leave", fr: "congé maladie" },
+        { id: 22, en: "to be on sick leave", fr: "être en congé maladie" },
+        { id: 23, en: "Parental leave", fr: "congé parental" },
+        { id: 24, en: "Parents are entitled to 13 weeks' parental leave", fr: "Les parents ont droit à 13 semaines de congé parental" },
+        { id: 25, en: "Salary", fr: "salaire mensuel" },
+        { id: 26, en: "Wages", fr: "salaire hebdomadaire, salaire à l'heure" },
+        { id: 27, en: "Fringe benefits (UK) / Perks (US)", fr: "avantages en nature" },
+        { id: 28, en: "a bonus", fr: "une prime" },
+        { id: 29, en: "to be well-paid", fr: "être bien payé" },
+        { id: 30, en: "to be ill-paid", fr: "être mal payé" },
+        { id: 31, en: "to reward", fr: "récompenser" },
+        { id: 32, en: "to be rewarded", fr: "être récompensé" },
+        { id: 33, en: "to retire", fr: "prendre sa retraite" },
+        { id: 34, en: "to be retired", fr: "être retraité" },
+        { id: 35, en: "Early retirement", fr: "retraite anticipée" },
+        { id: 36, en: "To be unemployed", fr: "être sans emploi" },
+        { id: 37, en: "Unemployment", fr: "chômage" },
+        { id: 38, en: "Unemployment rate", fr: "taux de chômage" },
+        { id: 39, en: "To be on the dole", fr: "vivre des allocations chômage (état)" },
+        { id: 40, en: "Unemployment benefits", fr: "allocations chômage (entreprise)" },
+        { id: 41, en: "To fire somebody", fr: "virer quelqu'un" },
+        { id: 42, en: "To make somebody redundant", fr: "licencier quelqu'un (raison économique)" },
+        { id: 43, en: "To lay someone off", fr: "licencier" },
+        { id: 44, en: "To resign", fr: "démissionner" },
+        { id: 45, en: "The company had to lay workers off", fr: "L'entreprise a dû licencier des ouvriers" }
+    ];
+
+    /* --- ALGORITHME LEVENSHTEIN --- */
+    function levenshteinDistance(a, b) {
+        if (a.length === 0) return b.length;
+        if (b.length === 0) return a.length;
+        var matrix = [];
+        for (var i = 0; i <= b.length; i++) { matrix[i] = [i]; }
+        for (var j = 0; j <= a.length; j++) { matrix[0][j] = j; }
+        for (var i = 1; i <= b.length; i++) {
+            for (var j = 1; j <= a.length; j++) {
+                if (b.charAt(i - 1) == a.charAt(j - 1)) {
+                    matrix[i][j] = matrix[i - 1][j - 1];
+                } else {
+                    matrix[i][j] = Math.min(matrix[i - 1][j - 1] + 1, Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1));
+                }
+            }
+        }
+        return matrix[b.length][a.length];
+    }
+
+    /* --- VARIABLES --- */
+    let activeList = []; 
+    let currentSessionErrors = [];    
+    let currentIndex = 0, currentMode = "", questionDirection = ""; 
+    let isWaiting = false, mistakesCount = 0;
+    let isQuizMode = false;
+
+    const STORAGE_KEY_ERRORS = 'english_master_persistent_errors_2';
+    const STORAGE_KEY_SESSION = 'english_master_session_2';
+
+    /* --- INITIALISATION --- */
+    window.onload = function() { checkAutoSave(); updateErrorButton(); };
+
+    function checkAutoSave() {
+        const savedSession = localStorage.getItem(STORAGE_KEY_SESSION);
+        const btnResume = document.getElementById('btn-resume-session');
+        if (savedSession) {
+            btnResume.style.display = "block";
+            let data = JSON.parse(savedSession);
+            btnResume.innerText = "⏳ Reprendre (" + data.currentIndex + "/" + data.total + ")";
+        }
+    }
+
+    /* Gestion du bouton d'erreurs persistantes */
+    function getPersistentErrors() {
+        const stored = localStorage.getItem(STORAGE_KEY_ERRORS);
+        return stored ? JSON.parse(stored) : [];
+    }
+
+    function savePersistentError(item) {
+        let errors = getPersistentErrors();
+        if (!errors.find(e => e.id === item.id)) {
+            errors.push(item);
+            localStorage.setItem(STORAGE_KEY_ERRORS, JSON.stringify(errors));
+            updateErrorButton();
+        }
+    }
+
+    function removePersistentError(itemId) {
+        let errors = getPersistentErrors();
+        const newErrors = errors.filter(e => e.id !== itemId);
+        localStorage.setItem(STORAGE_KEY_ERRORS, JSON.stringify(newErrors));
+        updateErrorButton();
+    }
+
+    function updateErrorButton() {
+        const errors = getPersistentErrors();
+        const btn = document.getElementById('btn-review-errors');
+        if (errors.length > 0) {
+            btn.style.display = "block";
+            btn.innerText = `🛑 Revoir mes erreurs (${errors.length})`;
+        } else {
+            btn.style.display = "none";
+        }
+    }
+
+    /* --- GESTION DU CLAVIER --- */
+    document.addEventListener('keydown', function(e) {
+        if (document.getElementById('game').style.display === 'block') {
+            if (e.key === "Enter") {
+                if (isWaiting) suivant();
+                else if (!isQuizMode) verifier();
+            }
+        }
+    });
+
+    /* --- FONCTIONS NAVIGATION --- */
+    function retourMenu() {
+        // On ne supprime PAS la session ici, pour permettre de "Reprendre"
+        // On met juste à jour l'affichage
+        document.getElementById('game').style.display = 'none';
+        document.getElementById('menu').style.display = 'block';
+        checkAutoSave(); // Met à jour le bouton reprendre
+    }
+
+    /* --- SAUVEGARDE ETAT SESSION --- */
+    function sauvegarderEtatJeu() {
+        const etat = {
+            activeList: activeList, 
+            currentSessionErrors: currentSessionErrors,
+            currentIndex: currentIndex, currentMode: currentMode,
+            mistakesCount: mistakesCount, total: activeList.length,
+            isQuizMode: isQuizMode
+        };
+        localStorage.setItem(STORAGE_KEY_SESSION, JSON.stringify(etat));
+    }
+
+    function restaurerPartieEnCours() {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY_SESSION));
+        if (saved) {
+            activeList = saved.activeList; 
+            currentSessionErrors = saved.currentSessionErrors || [];
+            currentIndex = saved.currentIndex; currentMode = saved.currentMode;
+            mistakesCount = saved.mistakesCount;
+            isQuizMode = saved.isQuizMode;
+            demarrerInterfaceJeu();
+            chargerQuestion();
+        }
+    }
+
+    /* --- MOTEUR DE JEU --- */
+    function lancerPartie(mode, isReplay) {
+        currentMode = mode;
+        isQuizMode = mode.includes('quiz'); // Détecte si c'est un quiz
+
+        if (mode === 'review_errors') {
+            const errors = getPersistentErrors();
+            if (errors.length === 0) { alert("Aucune erreur enregistrée !"); return; }
+            activeList = errors.sort(() => Math.random() - 0.5);
+        } 
+        else if (mode === 'write_part1' || mode === 'quiz_part1') {
+            activeList = fullList.slice(0, 20).sort(() => Math.random() - 0.5);
+        } 
+        else if (mode === 'write_part2' || mode === 'quiz_part2') {
+            activeList = fullList.slice(20).sort(() => Math.random() - 0.5);
+        } 
+        else {
+            // All / Mixte
+            activeList = [...fullList].sort(() => Math.random() - 0.5);
+        }
+        
+        currentSessionErrors = []; currentIndex = 0;
+        localStorage.removeItem(STORAGE_KEY_SESSION); 
+        demarrerInterfaceJeu();
+        chargerQuestion();
+    }
+
+    function demarrerInterfaceJeu() {
+        document.getElementById('menu').style.display = 'none';
+        document.getElementById('game').style.display = 'block';
+        
+        window.scrollTo(0,0);
+
+        const inputArea = document.getElementById('input-area');
+        const quizArea = document.getElementById('quiz-area');
+        if (isQuizMode) {
+            inputArea.style.display = 'none';
+            quizArea.style.display = 'grid';
+        } else {
+            inputArea.style.display = 'block';
+            quizArea.style.display = 'none';
+        }
+    }
+
+    function chargerQuestion() {
+        if (currentIndex >= activeList.length) { finDeSession(); return; }
+
+        isWaiting = false; mistakesCount = 0;
+        
+        const card = document.getElementById('q-text');
+        card.classList.remove('anim-pop', 'anim-shake');
+        
+        document.getElementById('feedback').style.display = 'none';
+        document.getElementById('btn-next').style.display = 'none';
+        
+        const btnCheck = document.getElementById('btn-check');
+        const btnGiveup = document.getElementById('btn-giveup');
+        
+        if (!isQuizMode) {
+            btnCheck.style.display = 'block';
+            btnCheck.style.width = '100%'; 
+            btnGiveup.style.display = 'none';
+        }
+        
+        const input = document.getElementById('user-input');
+        input.value = ""; input.disabled = false;
+        
+        const item = activeList[currentIndex];
+        document.getElementById('counter').innerText = `${currentIndex + 1} / ${activeList.length}`;
+        document.getElementById('progress-fill').style.width = ((currentIndex) / activeList.length) * 100 + "%";
+
+        // Détermine la direction
+        if (isQuizMode) {
+            // Pour le quiz, on affiche toujours l'anglais et on cherche le français (plus simple pour QCM)
+            // Ou on peut faire aléatoire. Faisons simple : Anglais vers Français pour le Quiz
+            questionDirection = 'en_fr'; 
+        } else {
+            // Mode écriture : aléatoire
+            questionDirection = Math.random() < 0.5 ? 'en_fr' : 'fr_en'; 
+        }
+
+        const badge = document.getElementById('direction-label');
+
+        if (isQuizMode) {
+            card.innerText = item.en;
+            badge.innerText = "Quelle est la traduction ?";
+            genererQuiz(item);
+        } else {
+            if (questionDirection === 'en_fr') {
+                card.innerText = item.en;
+                badge.innerText = "🇬🇧 ➔ 🇫🇷 (Français)";
+                input.placeholder = "En français...";
+            } else {
+                card.innerText = item.fr;
+                badge.innerText = "🇫🇷 ➔ 🇬🇧 (Anglais)";
+                input.placeholder = "In English...";
+            }
+        }
+        sauvegarderEtatJeu();
+    }
+
+    function verifier() {
+        if (isWaiting) return;
+        
+        const item = activeList[currentIndex];
+        const inputVal = document.getElementById('user-input').value.trim().toLowerCase();
+        
+        let correctAnswers = [], displayAnswer = "";
+
+        if (questionDirection === 'en_fr') {
+            correctAnswers = item.fr.toLowerCase().split(/,|\//).map(s => s.trim());
+            displayAnswer = item.fr;
+        } else {
+            correctAnswers = item.en.toLowerCase().split(/,|\//).map(s => s.trim());
+            if (item.fr.includes("stagiaire")) correctAnswers.push("intern", "trainee");
+            if (item.en.includes("Flexitime")) correctAnswers.push("rexitime");
+            displayAnswer = item.en;
+        }
+
+        let matchFound = false, isPerfect = false, errorCount = 0;
+
+        for (let ans of correctAnswers) {
+            const cleanAns = ans.replace(/[().]/g, "").trim();
+            const cleanInput = inputVal.replace(/[().]/g, "").trim();
+
+            if (cleanInput === cleanAns) { matchFound = true; isPerfect = true; break; }
+            if (ans.length > 4 && cleanInput.includes(cleanAns)) { matchFound = true; isPerfect = true; break; }
+            
+            const dist = levenshteinDistance(cleanInput, cleanAns);
+            let maxErrors = 0;
+            if (ans.length > 8) maxErrors = 3;      
+            else if (ans.length > 5) maxErrors = 2; 
+            else if (ans.length > 3) maxErrors = 1; 
+            
+            if (dist <= maxErrors && ans.length > 3) { matchFound = true; isPerfect = false; errorCount = dist; break; }
+        }
+        
+        if (matchFound) succes(item, isPerfect, errorCount);
+        else erreur(item, displayAnswer);
+    }
+
+    function succes(item, isPerfect, errorCount) {
+        document.getElementById('q-text').classList.add('anim-pop');
+        const feedback = document.getElementById('feedback');
+        
+        if (currentMode === 'review_errors') {
+            removePersistentError(item.id);
+        }
+
+        if (isPerfect) {
+            feedback.className = "feedback correct";
+            feedback.innerHTML = "<strong>✅ Correct !</strong>";
+        } else {
+            feedback.className = "feedback almost";
+            feedback.innerHTML = `<strong>👌 Accepté !</strong> (${errorCount} faute(s))`;
+        }
+        
+        feedback.style.display = "block";
+        terminerTour();
+    }
+
+    function erreur(item, bonneReponse) {
+        document.getElementById('q-text').classList.add('anim-shake');
+        setTimeout(() => document.getElementById('q-text').classList.remove('anim-shake'), 500);
+
+        mistakesCount++;
+        savePersistentError(item);
+        
+        const feedback = document.getElementById('feedback');
+        feedback.className = "feedback incorrect";
+        feedback.style.display = "block";
+        
+        // Gestion bouton abandon (seulement en mode écriture)
+        if(!isQuizMode) {
+            const btnCheck = document.getElementById('btn-check');
+            const btnGiveup = document.getElementById('btn-giveup');
+            btnCheck.style.width = '70%'; 
+            btnGiveup.style.display = 'block';
+            btnGiveup.style.width = '28%'; 
+        }
+
+        if (mistakesCount >= 3) {
+            feedback.innerHTML = `❌ Faux. <br>💡 Indice : <strong>${bonneReponse.substring(0,3)}...</strong>`;
+        } else {
+            feedback.innerHTML = `⚠️ Faux. Essai ${mistakesCount}/3.`;
+        }
+    }
+
+    function abandonner() {
+        const item = activeList[currentIndex];
+        
+        if (!currentSessionErrors.find(i => i.id === item.id)) currentSessionErrors.push(item);
+        savePersistentError(item);
+
+        const reponse = questionDirection === 'en_fr' ? item.fr : item.en;
+        const feedback = document.getElementById('feedback');
+        feedback.className = "feedback incorrect";
+        feedback.innerHTML = `Réponse : <strong>${reponse}</strong>.`;
+        feedback.style.display = "block";
+        terminerTour();
+    }
+
+    function terminerTour() {
+        isWaiting = true;
+        if (!isQuizMode) {
+            document.getElementById('btn-check').style.display = 'none';
+            document.getElementById('btn-giveup').style.display = 'none';
+            document.getElementById('user-input').disabled = true;
+        }
+        document.getElementById('btn-next').style.display = 'block';
+        sauvegarderEtatJeu();
+    }
+
+    function suivant() {
+        currentIndex++;
+        chargerQuestion();
+    }
+
+    /* --- QUIZ LOGIC --- */
+    function genererQuiz(item) {
+        const area = document.getElementById('quiz-area');
+        area.innerHTML = "";
+        
+        let choices = [item];
+        while (choices.length < 4) {
+            let r = fullList[Math.floor(Math.random() * fullList.length)];
+            if (!choices.includes(r)) choices.push(r);
+        }
+        choices.sort(() => Math.random() - 0.5);
+
+        choices.forEach((c) => {
+            let btn = document.createElement('div'); 
+            btn.className = "quiz-btn";
+            btn.innerText = c.fr;
+            btn.onclick = () => handleQuizClick(c, btn);
+            area.appendChild(btn);
+        });
+    }
+
+    function handleQuizClick(choiceData, btnElement) {
+        if(isWaiting) return;
+        const correctItem = activeList[currentIndex];
+        
+        if (choiceData.id === correctItem.id) {
+            btnElement.style.background = "#d1f7ea";
+            btnElement.style.borderColor = "#00b894";
+            succes(correctItem, true, 0);
+        } else {
+            btnElement.style.background = "#ffeaea";
+            btnElement.style.borderColor = "#ff7675";
+            
+            if (!currentSessionErrors.find(i => i.id === correctItem.id)) currentSessionErrors.push(correctItem);
+            savePersistentError(correctItem);
+
+            const feedback = document.getElementById('feedback');
+            feedback.className = "feedback incorrect";
+            feedback.innerHTML = `❌ Raté. <br>Réponse : <strong>${correctItem.fr}</strong>`;
+            feedback.style.display = "block";
+            terminerTour();
+        }
+    }
+
+    function menuPrincipal() { 
+        window.location.href = "anglais.html"; 
+    }
+
+    function finDeSession() {
+        const gameDiv = document.getElementById('game');
+        localStorage.removeItem(STORAGE_KEY_SESSION);
+        updateErrorButton();
+
+        let html = "";
+        
+        if (currentMode === 'review_errors') {
+             html = `
+                <div style="font-size:4em">🧹</div>
+                <h2>Révision terminée !</h2>
+                <p>Vous avez nettoyé votre liste d'erreurs.</p>
+                <button class='btn-action btn-next' style='display:block' onclick='retourMenu()'>Retour Menu</button>
+            `;
+        } else if (currentSessionErrors.length === 0) {
+            html = `
+                <div style="font-size:4em; animation: popSuccess 1s infinite;">🏆</div>
+                <h2 style="color:#00b894;">SESSION PARFAITE !</h2>
+                <button class='btn-action btn-next' style='display:block' onclick='retourMenu()'>Menu</button>
+            `;
+        } else {
+            html = `
+                <div style="font-size:4em">📝</div>
+                <h2>Terminé !</h2>
+                <p>Score : <strong>${activeList.length - currentSessionErrors.length} / ${activeList.length}</strong></p>
+                <p style="font-size:0.9em; color:#636e72;">Vos erreurs ont été ajoutées à votre historique.</p>
+                
+                <div style="margin-top:20px;">
+                    <button class='btn-action btn-next' style='display:block; background:#6c5ce7;' onclick='retourMenu()'>
+                        🏠 Menu & Voir erreurs
+                    </button>
+                </div>
+            `;
+        }
+        gameDiv.innerHTML = html;
+    }
+</script>
+<style>
+    /* L'écran noir qui recouvre tout au début */
+    #page-transition-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background-color: #050505; /* Noir profond du thème */
+        z-index: 99999; /* Au-dessus de tout */
+        opacity: 1;
+        transition: opacity 0.4s ease-in-out; /* Durée de la transition */
+        pointer-events: none; /* Permet de cliquer si jamais ça bug */
+    }
+    
+    /* Classe ajoutée en JS pour rendre transparent */
+    #page-transition-overlay.hidden {
+        opacity: 0;
+    }
+</style>
+
+<div id="page-transition-overlay"></div>
+
+<script>
+    // 1. TRANSITION D'ENTRÉE (FADE IN)
+    window.addEventListener('load', () => {
+        const overlay = document.getElementById('page-transition-overlay');
+        if(overlay) {
+            // Petit délai pour être sûr que le navigateur a affiché le fond noir
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+            }, 50);
+        }
+    });
+
+    // 2. TRANSITION DE SORTIE (FADE OUT)
+    document.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', function(e) {
+            const target = this.getAttribute('href');
+            
+            // On n'anime que les liens internes réels (pas les #, pas les liens externes)
+            if (target && target !== '#' && !target.startsWith('javascript') && this.target !== '_blank') {
+                e.preventDefault(); // Bloque le changement de page immédiat
+                
+                const overlay = document.getElementById('page-transition-overlay');
+                if(overlay) {
+                    overlay.classList.remove('hidden'); // Remet le noir
+                    
+                    // Attend la fin de l'animation (0.4s) avant de changer de page
+                    setTimeout(() => {
+                        window.location.href = target;
+                    }, 400); 
+                } else {
+                    window.location.href = target; // Sécurité si l'overlay n'existe pas
+                }
+            }
+        });
+    });
+</script>
+</body></html>

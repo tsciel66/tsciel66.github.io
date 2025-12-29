@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Maths Pocket Coach</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌩️</text></svg>">
+    <style>
+        :root {
+            --primary: #dc2626;       /* Rouge Yvan Monka ;) */
+            --primary-light: #fef2f2; 
+            --text: #1f2937;
+            --gray: #6b7280;
+            --bg: #f9fafb;
+            --card-bg: #ffffff;
+            --success: #10b981;
+            --error: #ef4444;
+            --nav-height: 70px;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px 20px calc(var(--nav-height) + 20px) 20px;
+        }
+
+        .back-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            text-decoration: none;
+            color: var(--primary);
+            font-weight: bold;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 50;
+        }
+        .back-link:active { transform: scale(0.95); }
+
+        h1 {
+            font-size: 1.5rem;
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 20px;
+            margin-top: 50px;
+        }
+
+        h2 { font-size: 1.2rem; margin-top: 0; color: #111827; }
+
+        /* NAVIGATION MOBILE */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: var(--nav-height);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .nav-item {
+            background: none;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray);
+            font-size: 0.7rem;
+            font-weight: 600;
+            width: 25%;
+            height: 100%;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .nav-item span.icon { font-size: 1.5rem; margin-bottom: 4px; display: block; }
+        .nav-item.active { color: var(--primary); }
+        .nav-item.active span.icon { transform: scale(1.1); }
+
+        /* SECTIONS & CARDS */
+        .section { display: none; animation: fadeIn 0.3s ease; }
+        .section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border: 1px solid #f3f4f6;
+        }
+
+        .concept-tag { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; margin-bottom: 8px; }
+        .tag-blue { background: #dbeafe; color: #1e40af; }
+        .tag-green { background: #d1fae5; color: #065f46; }
+        .tag-purple { background: #ede9fe; color: #5b21b6; }
+        .tag-orange { background: #ffedd5; color: #9a3412; }
+        .tag-red { background: #fee2e2; color: #991b1b; }
+
+        /* VIDÉO BUTTON */
+        .video-btn {
+            display: block;
+            width: 100%;
+            text-align: center;
+            background: #fdf2f8;
+            color: #be185d;
+            padding: 8px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            border: 1px solid #fbcfe8;
+            transition: background 0.2s;
+        }
+        .video-btn:active { background: #fce7f3; transform: scale(0.98); }
+
+        /* ACCORDIONS */
+        details { background: white; border-radius: 12px; margin-bottom: 12px; overflow: hidden; border: 1px solid #e5e7eb; }
+        summary { padding: 16px; font-weight: 600; list-style: none; display: flex; justify-content: space-between; align-items: center; }
+        summary::after { content: '+'; font-size: 1.2rem; color: var(--primary); }
+        details[open] summary { background: var(--primary-light); color: var(--primary); }
+        details[open] summary::after { content: '-'; }
+        .detail-content { padding: 16px; border-top: 1px solid #e5e7eb; }
+
+        .math-box { background: #f8fafc; border: 2px dashed #cbd5e1; padding: 10px; border-radius: 8px; text-align: center; font-family: serif; font-size: 1.1rem; margin: 10px 0; }
+
+        /* QUIZ UI */
+        .quiz-option { display: block; background: white; border: 2px solid #e5e7eb; padding: 15px; border-radius: 12px; margin-bottom: 10px; font-weight: 500; cursor: pointer; }
+        .quiz-option.selected { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
+        input[type="radio"] { display: none; }
+
+        .btn-action { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 1rem; font-weight: bold; margin-top: 10px; box-shadow: 0 4px 6px rgba(220, 38, 38, 0.3); }
+        .btn-action:active { transform: scale(0.98); }
+
+        .feedback-box { margin-top: 15px; padding: 15px; border-radius: 12px; display: none; font-size: 0.95rem; }
+        .correct { background: #d1fae5; color: #064e3b; border: 1px solid #34d399; }
+        .wrong { background: #fee2e2; color: #7f1d1d; border: 1px solid #f87171; }
+
+        /* CALCULATOR */
+        .calc-row { display: flex; gap: 10px; margin-bottom: 15px; }
+        .input-group { flex: 1; }
+        .input-group label { display: block; font-size: 0.8rem; color: var(--gray); margin-bottom: 4px; }
+        input[type="number"] { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 1.1rem; text-align: center; -moz-appearance: textfield; }
+        .result-display { font-size: 1.5rem; text-align: center; color: var(--primary); font-weight: bold; padding: 20px; }
+
+    </style>
+</head>
+<body>
+
+    <a href="Math.html" class="back-link">← Retour</a>
+
+    <h1>📱 Maths Coach</h1>
+
+    <div id="cours" class="section active">
+        <div class="card">
+            <h2>💡 La Logique</h2>
+            <p style="font-size: 0.95rem;">2 questions à se poser :</p>
+            <ul style="padding-left: 20px; margin-bottom: 0;">
+                <li>L'ordre est-il important ?</li>
+                <li>Y a-t-il répétition ?</li>
+            </ul>
+            <a href="https://www.youtube.com/watch?v=nLTLtavSF60" target="_blank" class="video-btn">
+                📺 Voir le cours complet (Monka)
+            </a>
+        </div>
+
+        <h3>Tes 4 Outils Clés</h3>
+        
+        <div class="card">
+            <span class="concept-tag tag-blue">p-uplet</span>
+            <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                <span>🔢 Ordre : <strong>OUI</strong></span>
+                <span>🔄 Répétition : <strong>OUI</strong></span>
+            </div>
+            <div class="math-box">n<sup>k</sup></div>
+            <p style="font-size:0.9rem; color:var(--gray); margin:0;">Ex: Code secret, Digicode.</p>
+        </div>
+
+        <div class="card">
+            <span class="concept-tag tag-purple">Arrangement</span>
+            <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                <span>🔢 Ordre : <strong>OUI</strong></span>
+                <span>🚫 Répétition : <strong>NON</strong></span>
+            </div>
+            <div class="math-box">n! / (n-k)!</div>
+            <p style="font-size:0.9rem; color:var(--gray); margin:0;">Ex: Podium, Course, Élection avec postes.</p>
+            <a href="https://www.youtube.com/watch?v=2fKdO9t8wfo" target="_blank" class="video-btn">📺 Vidéo Arrangements</a>
+        </div>
+
+        <div class="card">
+            <span class="concept-tag tag-orange">Permutation</span>
+            <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                <span>🔢 Ordre : <strong>OUI</strong></span>
+                <span>👨‍👩‍👧‍👦 Tous les éléments</span>
+            </div>
+            <div class="math-box">n!</div>
+            <p style="font-size:0.9rem; color:var(--gray); margin:0;">Ex: Photo de classe, Anagramme.</p>
+            <a href="https://www.youtube.com/watch?v=kWEFtcWl_xU" target="_blank" class="video-btn">📺 Vidéo Permutations</a>
+        </div>
+
+        <div class="card">
+            <span class="concept-tag tag-green">Combinaison</span>
+            <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                <span>🔀 Ordre : <strong>NON</strong></span>
+                <span>🚫 Répétition : <strong>NON</strong></span>
+            </div>
+            <div class="math-box">( n )<br>( k )</div>
+            <p style="font-size:0.9rem; color:var(--gray); margin:0;">Ex: Main de cartes, Groupe.</p>
+            <a href="https://www.youtube.com/watch?v=_ip2dV_BUTM" target="_blank" class="video-btn">📺 Vidéo Combinaisons</a>
+        </div>
+    </div>
+
+    <div id="formules" class="section">
+        <h2>🔍 Formules & Détails</h2>
+        <p style="color:var(--gray); font-size:0.9rem;">Appuie pour ouvrir.</p>
+        <details>
+            <summary>📝 Le p-uplet (Listes)</summary>
+            <div class="detail-content">On remplit <strong>k</strong> cases avec <strong>n</strong> choix.<br><em>Ex: Code 3 chiffres.</em><br>n=10, k=3 → <strong>10<sup>3</sup> = 1000</strong></div>
+        </details>
+        <details>
+            <summary>🏆 L'Arrangement</summary>
+            <div class="detail-content">On choisit <strong>k</strong> gagnants parmi <strong>n</strong>, dans l'ordre.<br><em>Ex: Tiercé (3 parmi 15).</em><br>15 × 14 × 13</div>
+        </details>
+        <details>
+            <summary>📸 La Permutation</summary>
+            <div class="detail-content">On mélange <strong>TOUT</strong> le monde.<br>Calcul : <strong>n!</strong><br>Ex: 5 amis → 120.</div>
+        </details>
+        <details>
+            <summary>🃏 La Combinaison</summary>
+            <div class="detail-content">On fait des "paquets". Ordre ne compte pas.<br><em>Ex: Poker, Délégation.</em><br>Formule : n! / (k!(n-k)!)</div>
+        </details>
+        <details>
+            <summary>🎲 Probabilités</summary>
+            <div class="detail-content"><strong>Cas Favorables / Cas Total</strong><br>Ex: P(Roi) = 4/32 = 1/8.</div>
+        </details>
+    </div>
+
+    <div id="quiz" class="section">
+        <h2>🏋️ Entraînement (6 exos)</h2>
+
+        <div class="card" id="card-q1">
+            <span class="concept-tag tag-blue">Exercice 1</span>
+            <h3>Le Digicode</h3>
+            <p>Code à 4 chiffres (0-9). Répétition possible.</p>
+            <label class="quiz-option" onclick="selectOption(1, 'wrong1', this)"><input type="radio" name="q1" value="wrong1"> Arrangement (10×9×8×7)</label>
+            <label class="quiz-option" onclick="selectOption(1, 'correct', this)"><input type="radio" name="q1" value="correct"> p-uplet (10<sup>4</sup>)</label>
+            <label class="quiz-option" onclick="selectOption(1, 'wrong2', this)"><input type="radio" name="q1" value="wrong2"> Permutation (10!)</label>
+            <button class="btn-action" onclick="checkQ(1)">Vérifier</button>
+            <div id="fb-1" class="feedback-box"></div>
+        </div>
+
+        <div class="card" id="card-q2">
+            <span class="concept-tag tag-green">Exercice 2</span>
+            <h3>Les Délégués</h3>
+            <p>Choisir 4 élèves parmi 34. Pas de rôle spécifique.</p>
+            <label class="quiz-option" onclick="selectOption(2, 'wrong1', this)"><input type="radio" name="q2" value="wrong1"> Arrangement (34×33×32×31)</label>
+            <label class="quiz-option" onclick="selectOption(2, 'correct', this)"><input type="radio" name="q2" value="correct"> Combinaison (C de 4 parmi 34)</label>
+            <button class="btn-action" onclick="checkQ(2)">Vérifier</button>
+            <div id="fb-2" class="feedback-box"></div>
+        </div>
+
+        <div class="card" id="card-q3">
+            <span class="concept-tag tag-orange">Exercice 3</span>
+            <h3>Les Scientifiques (Bloc)</h3>
+            <p>3 Physiciens veulent rester assis ensemble.</p>
+            <label class="quiz-option" onclick="selectOption(3, 'correct', this)"><input type="radio" name="q3" value="correct"> On les compte comme 1 bloc × 3!</label>
+            <label class="quiz-option" onclick="selectOption(3, 'wrong1', this)"><input type="radio" name="q3" value="wrong1"> On les compte comme 3 libres</label>
+            <button class="btn-action" onclick="checkQ(3)">Vérifier</button>
+            <div id="fb-3" class="feedback-box"></div>
+        </div>
+
+        <div class="card" id="card-q4">
+            <span class="concept-tag tag-orange">Exercice 4</span>
+            <h3>L'Anagramme</h3>
+            <p>Combien de mots peut-on former avec les lettres du mot "MATHS" ?</p>
+            <label class="quiz-option" onclick="selectOption(4, 'wrong1', this)"><input type="radio" name="q4" value="wrong1"> 5<sup>5</sup> (p-uplet)</label>
+            <label class="quiz-option" onclick="selectOption(4, 'correct', this)"><input type="radio" name="q4" value="correct"> 5! (Permutation)</label>
+            <label class="quiz-option" onclick="selectOption(4, 'wrong2', this)"><input type="radio" name="q4" value="wrong2"> Combinaison de 5 parmi 5</label>
+            <button class="btn-action" onclick="checkQ(4)">Vérifier</button>
+            <div id="fb-4" class="feedback-box"></div>
+        </div>
+
+        <div class="card" id="card-q5">
+            <span class="concept-tag tag-purple">Exercice 5</span>
+            <h3>Le Podium</h3>
+            <p>Course de 8 athlètes. On cherche le podium (Or, Argent, Bronze).</p>
+            <label class="quiz-option" onclick="selectOption(5, 'correct', this)"><input type="radio" name="q5" value="correct"> Arrangement (8 × 7 × 6)</label>
+            <label class="quiz-option" onclick="selectOption(5, 'wrong1', this)"><input type="radio" name="q5" value="wrong1"> Combinaison (8 × 7 × 6 / 3!)</label>
+            <label class="quiz-option" onclick="selectOption(5, 'wrong2', this)"><input type="radio" name="q5" value="wrong2"> 8<sup>3</sup></label>
+            <button class="btn-action" onclick="checkQ(5)">Vérifier</button>
+            <div id="fb-5" class="feedback-box"></div>
+        </div>
+
+         <div class="card" id="card-q6">
+            <span class="concept-tag tag-red">Exercice 6 (Avancé)</span>
+            <h3>Emma & Bastien</h3>
+            <p>On forme un groupe. Emma refuse d'être dans le groupe si Bastien y est aussi. Quelle méthode ?</p>
+            <label class="quiz-option" onclick="selectOption(6, 'wrong1', this)"><input type="radio" name="q6" value="wrong1"> Calculer tous les groupes possibles.</label>
+            <label class="quiz-option" onclick="selectOption(6, 'correct', this)"><input type="radio" name="q6" value="correct"> Total - (Cas où ils sont ensemble)</label>
+            <button class="btn-action" onclick="checkQ(6)">Vérifier</button>
+            <div id="fb-6" class="feedback-box"></div>
+        </div>
+
+    </div>
+
+    <div id="calc" class="section">
+        <h2>🧮 Calculatrice</h2>
+        <div class="card">
+            <h3>Combinaison (k parmi n)</h3>
+            <div class="calc-row">
+                <div class="input-group"><label>Total (n)</label><input type="number" id="comb-n" placeholder="34"></div>
+                <div class="input-group"><label>Choix (k)</label><input type="number" id="comb-k" placeholder="4"></div>
+            </div>
+            <button class="btn-action" style="background-color: var(--success);" onclick="calcComb()">Calculer</button>
+            <div id="res-comb" class="result-display">-</div>
+        </div>
+        <div class="card">
+            <h3>Factorielle (n!)</h3>
+            <div class="calc-row"><div class="input-group"><label>Nombre (n)</label><input type="number" id="fact-n" placeholder="5"></div></div>
+            <button class="btn-action" style="background-color: var(--text);" onclick="calcFact()">Calculer</button>
+            <div id="res-fact" class="result-display">-</div>
+        </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <button class="nav-item active" onclick="nav('cours', this)"><span class="icon">📖</span>Cours</button>
+        <button class="nav-item" onclick="nav('formules', this)"><span class="icon">🔍</span>Formules</button>
+        <button class="nav-item" onclick="nav('quiz', this)"><span class="icon">📝</span>Quiz</button>
+        <button class="nav-item" onclick="nav('calc', this)"><span class="icon">🧮</span>Calc</button>
+    </nav>
+
+<script>
+    // NAVIGATION
+    function nav(sectionId, btn) {
+        document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
+        document.getElementById(sectionId).classList.add('active');
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        btn.classList.add('active');
+        window.scrollTo(0, 0);
+    }
+
+    // QUIZ UI
+    function selectOption(qId, val, labelElement) {
+        const parent = document.getElementById('card-q' + qId);
+        parent.querySelectorAll('.quiz-option').forEach(el => el.classList.remove('selected'));
+        labelElement.classList.add('selected');
+        labelElement.querySelector('input').checked = true;
+    }
+
+    // QUIZ LOGIC
+    const explanations = {
+        1: "✅ Oui ! Code = Ordre important + Répétition possible.",
+        2: "✅ Exact ! L'ordre ne compte pas pour une équipe.",
+        3: "✅ Bien vu ! C'est la technique du 'Bloc' solidaire.",
+        4: "✅ Bravo ! On utilise toutes les lettres distinctes, l'ordre compte. C'est une Permutation (5!).",
+        5: "✅ Oui ! L'ordre d'arrivée compte (Or ≠ Argent). Sans répétition. C'est un Arrangement.",
+        6: "✅ Excellent ! C'est la méthode du CONTRAIRE (Page 4 de tes notes). Beaucoup plus rapide que de tout compter."
+    };
+    const errors = {
+        1: "❌ Non. Dans un code, on peut faire 2222 (répétition) et 1234 ≠ 4321 (ordre).",
+        2: "❌ Non. Être élu 1er ou 4ème ne change rien, on est délégué.",
+        3: "❌ Faux. Si tu ne les attaches pas en 'bloc', ils seront séparés.",
+        4: "❌ Faux. On utilise chaque lettre une seule fois (pas de remise).",
+        5: "❌ Non. L'ordre compte ! Avoir la médaille d'or n'est pas pareil que le bronze.",
+        6: "❌ Trop long ! Calculer 'Emma seule' + 'Bastien seul' + 'Ni l'un ni l'autre' est fastidieux."
+    };
+
+    function checkQ(qId) {
+        const selected = document.querySelector(`input[name="q${qId}"]:checked`);
+        const fb = document.getElementById(`fb-${qId}`);
+        
+        if (!selected) {
+            fb.style.display = "block";
+            fb.innerHTML = "Choisis une réponse !";
+            fb.className = "feedback-box wrong";
+            return;
+        }
+
+        fb.style.display = "block";
+        if (selected.value === 'correct') {
+            fb.innerHTML = explanations[qId];
+            fb.className = "feedback-box correct";
+        } else {
+            fb.innerHTML = errors[qId];
+            fb.className = "feedback-box wrong";
+        }
+    }
+
+    // CALCULATOR
+    function factorial(n) {
+        if (n < 0) return -1;
+        if (n == 0) return 1;
+        let res = 1;
+        for(let i=1; i<=n; i++) res *= i;
+        return res;
+    }
+
+    function calcFact() {
+        const n = parseInt(document.getElementById('fact-n').value);
+        if(isNaN(n)) return;
+        document.getElementById('res-fact').innerText = factorial(n).toLocaleString();
+    }
+
+    function calcComb() {
+        const n = parseInt(document.getElementById('comb-n').value);
+        const k = parseInt(document.getElementById('comb-k').value);
+        if(isNaN(n) || isNaN(k) || k > n) {
+             document.getElementById('res-comb').innerText = "Erreur"; return;
+        }
+        let res = 1;
+        for(let i = 1; i <= k; i++) res = res * (n - i + 1) / i;
+        document.getElementById('res-comb').innerText = Math.round(res).toLocaleString();
+    }
+</script>
+<style>
+    /* L'écran noir qui recouvre tout au début */
+    #page-transition-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background-color: #050505; /* Noir profond du thème */
+        z-index: 99999; /* Au-dessus de tout */
+        opacity: 1;
+        transition: opacity 0.4s ease-in-out; /* Durée de la transition */
+        pointer-events: none; /* Permet de cliquer si jamais ça bug */
+    }
+    
+    /* Classe ajoutée en JS pour rendre transparent */
+    #page-transition-overlay.hidden {
+        opacity: 0;
+    }
+</style>
+
+<div id="page-transition-overlay"></div>
+
+<script>
+    // 1. TRANSITION D'ENTRÉE (FADE IN)
+    window.addEventListener('load', () => {
+        const overlay = document.getElementById('page-transition-overlay');
+        if(overlay) {
+            // Petit délai pour être sûr que le navigateur a affiché le fond noir
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+            }, 50);
+        }
+    });
+
+    // 2. TRANSITION DE SORTIE (FADE OUT)
+    document.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', function(e) {
+            const target = this.getAttribute('href');
+            
+            // On n'anime que les liens internes réels (pas les #, pas les liens externes)
+            if (target && target !== '#' && !target.startsWith('javascript') && this.target !== '_blank') {
+                e.preventDefault(); // Bloque le changement de page immédiat
+                
+                const overlay = document.getElementById('page-transition-overlay');
+                if(overlay) {
+                    overlay.classList.remove('hidden'); // Remet le noir
+                    
+                    // Attend la fin de l'animation (0.4s) avant de changer de page
+                    setTimeout(() => {
+                        window.location.href = target;
+                    }, 400); 
+                } else {
+                    window.location.href = target; // Sécurité si l'overlay n'existe pas
+                }
+            }
+        });
+    });
+</script>
+</body>
+</html>

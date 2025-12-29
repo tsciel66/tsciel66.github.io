@@ -1,0 +1,235 @@
+<html lang="fr"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu Physique</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&amp;display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌩️</text></svg>">
+    
+    <style>
+        /* --- STYLE GLOBAL --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #0f172a; /* Fond sombre */
+            
+            /* THÈME ÉLECTRICITÉ : Effet "Grille de circuit" + Lueur Jaune */
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                radial-gradient(circle at 50% 0%, rgba(251, 191, 36, 0.25) 0%, transparent 60%);
+            background-size: 30px 30px, 30px 30px, 100% 100%;
+            
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding-top: 2rem;
+        }
+
+        .mobile-container {
+            width: 100%;
+            max-width: 400px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* HEADER */
+        header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 1.2rem;
+            transition: background 0.2s;
+        }
+        .back-btn:hover { background: rgba(251, 191, 36, 0.2); }
+
+        h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #fbbf24, #f59e0b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 15px rgba(251, 191, 36, 0.3);
+        }
+
+        /* GRILLE MODIFIÉE : 1 colonne pour des boutons larges */
+        .grid-menu {
+            display: grid;
+            grid-template-columns: 1fr; /* 1 colonne seulement */
+            gap: 1rem;
+        }
+
+        /* BOUTON MODIFIÉ : Style rectangulaire "File Card" */
+        .folder-card {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            border-radius: 15px; /* Arrondi légèrement réduit pour le rectangle */
+            padding: 1.5rem;
+            
+            /* Changement majeur ici : Row au lieu de Column */
+            display: flex;
+            flex-direction: row; 
+            align-items: center;
+            justify-content: flex-start; /* Aligne le contenu à gauche */
+            
+            gap: 1rem;
+            text-decoration: none;
+            color: white;
+            transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
+            position: relative;
+            overflow: hidden;
+            /* Pas d'aspect-ratio ici pour laisser la hauteur s'adapter au contenu */
+        }
+
+        .folder-card:active { transform: scale(0.98); }
+        
+        .folder-card:hover {
+            background: rgba(30, 41, 59, 1);
+            border-color: #fbbf24;
+            box-shadow: 0 0 15px rgba(251, 191, 36, 0.3);
+            transform: translateX(5px); /* Décalage latéral au lieu de vertical */
+        }
+
+        .folder-icon { 
+            font-size: 2rem; 
+            filter: drop-shadow(0 0 5px rgba(251, 191, 36, 0.4));
+        }
+        
+        .folder-title {
+            font-weight: 600;
+            font-size: 1rem;
+            text-align: left; /* Texte aligné à gauche */
+        }
+
+        /* Petite flèche à droite pour indiquer que c'est un lien */
+        .arrow-indicator {
+            margin-left: auto;
+            color: #fbbf24;
+            font-size: 1.2rem;
+            opacity: 0.6;
+        }
+        .folder-card:hover .arrow-indicator { opacity: 1; }
+
+        /* Indicateur "En ligne" */
+        .power-led {
+            position: absolute;
+            top: 10px; right: 10px;
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background-color: #444;
+            box-shadow: inset 0 0 2px #000;
+        }
+        .folder-card:hover .power-led {
+            background-color: #fbbf24;
+            box-shadow: 0 0 5px #fbbf24;
+        }
+
+        footer { text-align: center; font-size: 0.7rem; color: #64748b; margin-top: auto; }
+    </style>
+</head>
+<body>
+
+    <div class="mobile-container">
+        
+        <header>
+            <a href="index.html" class="back-btn">⬅</a>
+            <h2>Physique App.</h2>
+        </header>
+
+        <div class="grid-menu">
+            
+            <a href="p-controles-revisions.html" class="folder-card">
+                <div class="power-led"></div>
+                <span class="folder-icon">📖</span>
+                <span class="folder-title">Révisions et anciens contrôles</span>
+                <span class="arrow-indicator">➜</span>
+            </a>
+            
+            <a href="#" class="folder-card" style="opacity: 0.3; border-style: dashed; border-color: #666;">
+                <span class="folder-icon">➕</span>
+                <span class="folder-title">Bientôt...</span>
+            </a>
+
+        </div>
+
+        <footer>
+            @2025 - Tristan PITON
+        </footer>
+
+    </div>
+
+<style>
+    /* L'écran noir qui recouvre tout au début */
+    #page-transition-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background-color: #050505; /* Noir profond du thème */
+        z-index: 99999; /* Au-dessus de tout */
+        opacity: 1;
+        transition: opacity 0.4s ease-in-out; /* Durée de la transition */
+        pointer-events: none; /* Permet de cliquer si jamais ça bug */
+    }
+    
+    /* Classe ajoutée en JS pour rendre transparent */
+    #page-transition-overlay.hidden {
+        opacity: 0;
+    }
+</style>
+
+<div id="page-transition-overlay"></div>
+
+<script>
+    // 1. TRANSITION D'ENTRÉE (FADE IN)
+    window.addEventListener('load', () => {
+        const overlay = document.getElementById('page-transition-overlay');
+        if(overlay) {
+            // Petit délai pour être sûr que le navigateur a affiché le fond noir
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+            }, 50);
+        }
+    });
+
+    // 2. TRANSITION DE SORTIE (FADE OUT)
+    document.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', function(e) {
+            const target = this.getAttribute('href');
+            
+            // On n'anime que les liens internes réels (pas les #, pas les liens externes)
+            if (target && target !== '#' && !target.startsWith('javascript') && this.target !== '_blank') {
+                e.preventDefault(); // Bloque le changement de page immédiat
+                
+                const overlay = document.getElementById('page-transition-overlay');
+                if(overlay) {
+                    overlay.classList.remove('hidden'); // Remet le noir
+                    
+                    // Attend la fin de l'animation (0.4s) avant de changer de page
+                    setTimeout(() => {
+                        window.location.href = target;
+                    }, 400); 
+                } else {
+                    window.location.href = target; // Sécurité si l'overlay n'existe pas
+                }
+            }
+        });
+    });
+</script>
+</body></html>

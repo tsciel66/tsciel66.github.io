@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Punctuation Quiz</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌩️</text></svg>">
+    <style>
+        /* --- DESIGN GLOBAL --- */
+        :root {
+            --primary-color: #6c5ce7;
+            --success-color: #00b894;
+            --error-color: #ff7675;
+            --text-dark: #2d3436;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #0f172a;
+            background: linear-gradient(45deg, #4e54c8, #8f94fb);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: var(--text-dark);
+            overscroll-behavior: none;
+        }
+
+        /* --- BACKGROUND ANIMÉ --- */
+        .circles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; z-index: 0; pointer-events: none; }
+        .circles li { position: absolute; display: block; list-style: none; width: 20px; height: 20px; background: rgba(255, 255, 255, 0.2); animation: animate 25s linear infinite; bottom: -150px; border-radius: 20%; }
+        .circles li:nth-child(1){ left: 25%; width: 80px; height: 80px; animation-delay: 0s; }
+        .circles li:nth-child(2){ left: 10%; width: 20px; height: 20px; animation-delay: 2s; animation-duration: 12s; }
+        .circles li:nth-child(3){ left: 70%; width: 20px; height: 20px; animation-delay: 4s; }
+        @keyframes animate { 0%{ transform: translateY(0) rotate(0deg); opacity: 1; border-radius: 0; } 100%{ transform: translateY(-1000px) rotate(720deg); opacity: 0; border-radius: 50%; } }
+
+        /* --- CONTENEUR PRINCIPAL --- */
+        .container {
+            position: relative; 
+            z-index: 10; 
+            background-color: rgba(255, 255, 255, 0.96);
+            padding: 25px 20px; 
+            border-radius: 25px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            width: 90%; 
+            max-width: 500px; 
+            text-align: center;
+            max-height: 90vh; 
+            overflow-y: auto;
+        }
+
+        h1 { color: #4834d4; font-weight: 700; margin: 10px 0 5px 0; font-size: 1.6em; }
+        h2 { color: #636e72; font-weight: 400; font-size: 0.9em; margin-bottom: 15px; }
+
+        /* --- BOUTON TOGGLE DROITE --- */
+        .toggle-btn-fixed {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #dfe6e9;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            cursor: pointer;
+            z-index: 20;
+            border: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* --- SIDEBAR RÉVISION (DROITE) --- */
+        .sidebar-review {
+            position: fixed;
+            top: 0; right: -100%; /* Caché à droite */
+            width: 250px;
+            height: 100%;
+            background: white;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+            z-index: 100;
+            transition: right 0.3s ease;
+            padding: 20px;
+            overflow-y: auto;
+            text-align: left;
+        }
+        .sidebar-review.active { right: 0; }
+        
+        .sidebar-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px;
+        }
+        .close-sidebar { background:none; border:none; font-size:1.5em; cursor:pointer; }
+        
+        .revision-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 8px 0; border-bottom: 1px solid #f1f1f1; font-size: 0.85em;
+        }
+        .rev-symbol { 
+            font-weight: bold; color: #6c5ce7; font-size: 1.2em; 
+            background: #f0f0ff; width: 30px; height: 30px; 
+            display:flex; align-items:center; justify-content:center; border-radius:50%; 
+        }
+
+        /* --- MENU D'ACCUEIL --- */
+        #menu { display: block; }
+        .menu-buttons { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
+        .mode-btn {
+            background: white; border: 2px solid transparent; padding: 18px; font-size: 1em;
+            color: var(--text-dark); border-radius: 15px; cursor: pointer; font-weight: 600;
+            font-family: 'Poppins', sans-serif; box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
+            transition: transform 0.1s;
+        }
+        .mode-btn:active { transform: scale(0.98); background: #f1f2f6; }
+        .mode-btn.resume {
+            background: linear-gradient(135deg, #fdcb6e 0%, #e17055 100%);
+            color: white; border: none; display: none;
+        }
+
+        /* --- ZONE DE JEU --- */
+        #game { display: none; }
+
+        .symbol-display {
+            background: white;
+            border: 2px solid #e1e6fa;
+            border-radius: 20px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4em;
+            color: #6c5ce7;
+            font-family: "Times New Roman", serif;
+            margin-bottom: 20px;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        input[type="text"] { 
+            width: 100%; padding: 15px; font-size: 1.1em; 
+            border: 2px solid #dfe6e9; border-radius: 12px; outline: none; 
+            margin-bottom: 15px; font-family: 'Poppins', sans-serif; 
+            -webkit-appearance: none; text-align: center; background: #fff;
+        }
+        input[type="text"]:focus { border-color: var(--primary-color); }
+
+        .btn-action { 
+            padding: 15px 0; width: 100%; border: none; border-radius: 12px; 
+            font-size: 1em; cursor: pointer; color: white; font-weight: 600; 
+            font-family: 'Poppins', sans-serif; margin-bottom: 10px;
+            transition: transform 0.1s;
+        }
+        .btn-valid { background-color: var(--success-color); box-shadow: 0 4px 0 #00947e; }
+        .btn-next { background-color: var(--primary-color); display: none; margin-top: 15px; box-shadow: 0 4px 0 #4834d4; }
+        .btn-giveup { background-color: var(--error-color); display: none; margin-top: 5px; width: 100%; }
+
+        .feedback { margin-top: 15px; padding: 15px; border-radius: 10px; display: none; font-size: 0.95em; line-height: 1.4em;}
+        .feedback.correct { background: #d1f7ea; color: #00947e; }
+        .feedback.incorrect { background: #ffeaea; color: #d63031; }
+
+        .back-menu { display:block; margin-top:20px; color:#b2bec3; font-size:0.8em; text-decoration:none; padding: 10px; }
+        .progress-text { color: #b2bec3; font-size: 0.8em; margin-bottom: 10px; font-weight: 600; }
+
+        /* Overlay pour fermer la sidebar en cliquant dehors */
+        .overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 50; display: none;
+        }
+        .overlay.active { display: block; }
+
+    </style>
+</head>
+<body>
+
+    <ul class="circles"><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li></ul>
+
+    <div class="overlay" onclick="toggleSidebar()"></div>
+    <div class="sidebar-review" id="sidebar">
+        <div class="sidebar-header">
+            <h3>Aide-mémoire</h3>
+            <button class="close-sidebar" onclick="toggleSidebar()">✕</button>
+        </div>
+        <div id="revisionList">
+            </div>
+    </div>
+
+    <div class="container">
+        
+        <button class="toggle-btn-fixed" onclick="toggleSidebar()">📖</button>
+
+        <div style="font-size: 3em; margin-bottom: 5px;">⁉️</div>
+        <h1>Punctuation</h1>
+        
+        <div id="menu">
+            <h2>Choisis ton mode</h2>
+            
+            <div class="menu-buttons">
+                <button id="btn-resume-session" class="mode-btn resume" onclick="restaurerPartieEnCours()">
+                    ⏳ Reprendre ma session
+                </button>
+
+                <button class="mode-btn" onclick="lancerPartie(false)">
+                    ▶️ Démarrer le Quiz
+                </button>
+            </div>
+            
+            <a href="anglais.html" class="back-menu">← Retour Menu Anglais</a>
+        </div>
+
+        <div id="game">
+            <div class="progress-text">Question <span id="currentIndex">1</span> / <span id="totalIndex">14</span></div>
+
+            <div class="symbol-display" id="displaySymbol">?</div>
+
+            <input type="text" id="userAnswer" placeholder="Nom du signe..." autocomplete="off" autocapitalize="none">
+            
+            <div id="feedbackDisplay" class="feedback"></div>
+
+            <div>
+                <button id="btnCheck" class="btn-action btn-valid" onclick="verifierReponse()">Valider</button>
+                <button id="btnGiveup" class="btn-action btn-giveup" onclick="abandonner()">Je ne sais pas</button>
+                <button id="btnNext" class="btn-action btn-next" onclick="questionSuivante()">Suivant ➜</button>
+            </div>
+
+            <a href="#" onclick="menuPrincipal()" class="back-menu">Abandonner & Menu</a>
+        </div>
+
+    </div>
+
+    <script>
+        /* --- DONNÉES --- */
+        const baseDeDonnees = [
+            { id: 1, symbol: ".",  name: "Full stop / Period" },
+            { id: 2, symbol: ",",  name: "Comma" },
+            { id: 3, symbol: ":",  name: "Colon" },
+            { id: 4, symbol: ";",  name: "Semicolon" },
+            { id: 5, symbol: "!",  name: "Exclamation mark" },
+            { id: 6, symbol: "?",  name: "Question mark" },
+            { id: 7, symbol: "'",  name: "Apostrophe" },
+            { id: 8, symbol: "-",  name: "Hyphen" },
+            { id: 9, symbol: "—",  name: "Dash" },
+            { id: 10, symbol: "()", name: "Brackets" },
+            { id: 11, symbol: "[]", name: "Square brackets" },
+            { id: 12, symbol: "\"", name: "Quotation marks" },
+            { id: 13, symbol: "/",  name: "Slash" },
+            { id: 14, symbol: "@",  name: "At sign" }
+        ];
+
+        /* --- VARIABLES --- */
+        let activeList = [], failedList = [];
+        let currentIndex = 0;
+        let isWaiting = false;
+        const STORAGE_KEY = 'ponctuation_session';
+
+        /* --- INITIALISATION --- */
+        window.onload = function() {
+            genererListeRevision();
+            checkAutoSave();
+        };
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.querySelector('.overlay').classList.toggle('active');
+        }
+
+        function genererListeRevision() {
+            const listContainer = document.getElementById('revisionList');
+            let html = "";
+            baseDeDonnees.forEach(item => {
+                html += `
+                    <div class="revision-item">
+                        <span class="rev-symbol">${item.symbol}</span>
+                        <span>${item.name}</span>
+                    </div>
+                `;
+            });
+            listContainer.innerHTML = html;
+        }
+
+        /* --- LOGIQUE DE SAUVEGARDE --- */
+        function checkAutoSave() {
+            const savedSession = localStorage.getItem(STORAGE_KEY);
+            const btnResume = document.getElementById('btn-resume-session');
+            if (savedSession) {
+                btnResume.style.display = "block";
+                let data = JSON.parse(savedSession);
+                btnResume.innerText = "⏳ Reprendre (" + data.currentIndex + "/" + data.total + ")";
+            }
+        }
+
+        function sauvegarderEtatJeu() {
+            const etat = {
+                activeList: activeList, failedList: failedList,
+                currentIndex: currentIndex, total: activeList.length
+            };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(etat));
+        }
+
+        function restaurerPartieEnCours() {
+            const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+            if (saved) {
+                activeList = saved.activeList; failedList = saved.failedList;
+                currentIndex = saved.currentIndex;
+                demarrerInterfaceJeu();
+                chargerQuestion();
+            }
+        }
+
+        /* --- MOTEUR DE JEU --- */
+        function lancerPartie(isReplayErreurs) {
+            if (isReplayErreurs) {
+                const savedErrors = localStorage.getItem('ponctuation_failed_list');
+                activeList = savedErrors ? JSON.parse(savedErrors) : [];
+                activeList.sort(() => Math.random() - 0.5);
+            } else {
+                activeList = [...baseDeDonnees].sort(() => Math.random() - 0.5);
+            }
+            
+            failedList = []; currentIndex = 0;
+            localStorage.removeItem(STORAGE_KEY); 
+            demarrerInterfaceJeu();
+            chargerQuestion();
+        }
+
+        function demarrerInterfaceJeu() {
+            document.getElementById('menu').style.display = 'none';
+            document.getElementById('game').style.display = 'block';
+        }
+
+        function chargerQuestion() {
+            if (currentIndex >= activeList.length) { finDeSession(); return; }
+            
+            isWaiting = false;
+            const item = activeList[currentIndex];
+            
+            // UI Updates
+            document.getElementById('displaySymbol').innerText = item.symbol;
+            document.getElementById('currentIndex').innerText = currentIndex + 1;
+            document.getElementById('totalIndex').innerText = activeList.length;
+            
+            const input = document.getElementById('userAnswer');
+            input.value = ""; input.disabled = false;
+            
+            const feedback = document.getElementById('feedbackDisplay');
+            feedback.style.display = 'none';
+
+            document.getElementById('btnCheck').style.display = 'block';
+            document.getElementById('btnGiveup').style.display = 'block'; // On affiche le bouton abandon
+            document.getElementById('btnNext').style.display = 'none';
+            
+            sauvegarderEtatJeu();
+        }
+
+        /* --- VALIDATION --- */
+        document.getElementById("userAnswer").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                if (isWaiting) questionSuivante();
+                else verifierReponse();
+            }
+        });
+
+        function verifierReponse() {
+            if(isWaiting) return;
+            
+            const item = activeList[currentIndex];
+            const userText = document.getElementById('userAnswer').value.trim().toLowerCase();
+            const correctText = item.name.toLowerCase();
+            const possibilities = correctText.split('/').map(s => s.trim());
+            
+            let isCorrect = false;
+
+            if (possibilities.includes(userText)) isCorrect = true;
+            else if (userText.length > 2 && correctText.includes(userText)) isCorrect = true;
+            else if (userText + "s" === correctText || userText.slice(0, -1) === correctText) isCorrect = true;
+
+            afficherResultat(isCorrect);
+        }
+
+        function abandonner() {
+            // Considéré comme une erreur
+            const item = activeList[currentIndex];
+            if (!failedList.find(i => i.id === item.id)) failedList.push(item);
+            
+            const feedback = document.getElementById('feedbackDisplay');
+            feedback.style.display = 'block';
+            feedback.className = 'feedback incorrect';
+            feedback.innerHTML = `Réponse : <strong>${item.name}</strong>`;
+            
+            terminerTour();
+        }
+
+        function afficherResultat(isCorrect) {
+            const item = activeList[currentIndex];
+            const feedback = document.getElementById('feedbackDisplay');
+            feedback.style.display = 'block';
+            
+            if (isCorrect) {
+                feedback.innerHTML = "✅ <strong>Correct !</strong><br>" + item.name;
+                feedback.className = 'feedback correct';
+            } else {
+                if (!failedList.find(i => i.id === item.id)) failedList.push(item);
+                feedback.innerHTML = "❌ <strong>Dommage.</strong><br>Réponse : <strong>" + item.name + "</strong>";
+                feedback.className = 'feedback incorrect';
+            }
+            terminerTour();
+        }
+
+        function terminerTour() {
+            isWaiting = true;
+            document.getElementById('userAnswer').disabled = true;
+            document.getElementById('btnCheck').style.display = 'none';
+            document.getElementById('btnGiveup').style.display = 'none';
+            document.getElementById('btnNext').style.display = 'block';
+            sauvegarderEtatJeu();
+        }
+
+        function questionSuivante() {
+            currentIndex++;
+            chargerQuestion();
+        }
+
+        function menuPrincipal() {
+            document.getElementById('game').style.display = 'none';
+            document.getElementById('menu').style.display = 'block';
+            checkAutoSave();
+        }
+
+        function finDeSession() {
+            const gameDiv = document.getElementById('game');
+            if(failedList.length > 0) localStorage.setItem('ponctuation_failed_list', JSON.stringify(failedList));
+            localStorage.removeItem(STORAGE_KEY);
+
+            let html = "";
+            if (failedList.length === 0) {
+                html = `
+                    <div style="font-size:4em; animation: popSuccess 1s infinite;">🏆</div>
+                    <h2 style="color:#00b894;">SESSION PARFAITE !</h2>
+                    <button class='btn-action btn-next' style='display:block' onclick='menuPrincipal()'>Menu</button>
+                `;
+            } else {
+                html = `
+                    <div style="font-size:4em">📝</div>
+                    <h2>Terminé !</h2>
+                    <p>Score : <strong>${activeList.length - failedList.length} / ${activeList.length}</strong></p>
+                    
+                    <div style="margin-top:20px;">
+                        <button class='btn-action btn-next' style='display:block; background:#6c5ce7;' onclick='lancerPartie(true)'>
+                            🔄 Revoir (${failedList.length}) erreurs
+                        </button>
+                        <button class='mode-btn' style='border:1px solid #ccc; width:100%; margin-top:10px;' onclick='menuPrincipal()'>
+                            🏠 Menu
+                        </button>
+                    </div>
+                `;
+            }
+            gameDiv.innerHTML = html;
+        }
+
+    </script>
+<style>
+    /* L'écran noir qui recouvre tout au début */
+    #page-transition-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background-color: #050505; /* Noir profond du thème */
+        z-index: 99999; /* Au-dessus de tout */
+        opacity: 1;
+        transition: opacity 0.4s ease-in-out; /* Durée de la transition */
+        pointer-events: none; /* Permet de cliquer si jamais ça bug */
+    }
+    
+    /* Classe ajoutée en JS pour rendre transparent */
+    #page-transition-overlay.hidden {
+        opacity: 0;
+    }
+</style>
+
+<div id="page-transition-overlay"></div>
+
+<script>
+    // 1. TRANSITION D'ENTRÉE (FADE IN)
+    window.addEventListener('load', () => {
+        const overlay = document.getElementById('page-transition-overlay');
+        if(overlay) {
+            // Petit délai pour être sûr que le navigateur a affiché le fond noir
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+            }, 50);
+        }
+    });
+
+    // 2. TRANSITION DE SORTIE (FADE OUT)
+    document.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', function(e) {
+            const target = this.getAttribute('href');
+            
+            // On n'anime que les liens internes réels (pas les #, pas les liens externes)
+            if (target && target !== '#' && !target.startsWith('javascript') && this.target !== '_blank') {
+                e.preventDefault(); // Bloque le changement de page immédiat
+                
+                const overlay = document.getElementById('page-transition-overlay');
+                if(overlay) {
+                    overlay.classList.remove('hidden'); // Remet le noir
+                    
+                    // Attend la fin de l'animation (0.4s) avant de changer de page
+                    setTimeout(() => {
+                        window.location.href = target;
+                    }, 400); 
+                } else {
+                    window.location.href = target; // Sécurité si l'overlay n'existe pas
+                }
+            }
+        });
+    });
+</script>
+</body>
+</html>

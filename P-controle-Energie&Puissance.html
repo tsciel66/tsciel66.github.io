@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entraînement Physique - Énergie & Puissance</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌩️</text></svg>">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --secondary: #64748b;
+            --success: #10b981;
+            --error: #ef4444;
+            --background: #f8fafc;
+            --surface: #ffffff;
+            --text-main: #1e293b;
+            --text-light: #64748b;
+            --ai-color: #8b5cf6;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--background);
+            color: var(--text-main);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* BARRE DE RETOUR (Style Menu Principal) */
+        .top-bar {
+            background-color: #0f172a;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: white;
+        }
+        .btn-retour {
+            text-decoration: none;
+            color: white;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(255,255,255,0.15);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        /* Header */
+        header {
+            background-color: var(--surface);
+            padding: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        header h1 {
+            font-size: 1.2rem;
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .badge {
+            background: #dbeafe;
+            color: var(--primary-dark);
+            padding: 0.25rem 0.75rem;
+            border-radius: 99px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        /* Layout Principal */
+        main {
+            display: grid;
+            grid-template-columns: 7fr 3fr;
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+            flex: 1;
+            width: 100%;
+        }
+
+        /* RESPONSIVE SMARTPHONE */
+        @media (max-width: 900px) {
+            main {
+                grid-template-columns: 1fr; /* Une seule colonne */
+                padding: 1rem;
+                margin: 0;
+                gap: 1rem;
+            }
+            
+            /* L'aide-mémoire passe en dessous */
+            aside { order: 2; position: static; }
+            .workspace { order: 1; }
+            
+            /* Boutons plus gros */
+            .btn-group { flex-direction: column; width: 100%; }
+            button { width: 100%; justify-content: center; padding: 1rem; }
+            
+            .input-group { flex-direction: column; align-items: stretch; }
+            input[type="number"] { width: 100%; }
+        }
+
+        .card {
+            background: var(--surface);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid #e2e8f0;
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .question-title { font-weight: 700; color: var(--text-main); }
+
+        /* Canvas adaptatif */
+        .canvas-container {
+            width: 100%;
+            background: #f1f5f9;
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        canvas { max-width: 100%; height: auto; }
+
+        .question-text { font-size: 1.1rem; margin-bottom: 1.5rem; }
+
+        .input-group {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        input[type="number"] {
+            padding: 0.8rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 0.5rem;
+            font-size: 1.1rem;
+            flex: 1;
+        }
+
+        .unit { font-weight: bold; color: var(--text-light); align-self: center; }
+
+        .btn-group { display: flex; gap: 0.5rem; }
+
+        button {
+            padding: 0.8rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            color: white;
+            font-size: 1rem;
+        }
+
+        .btn-primary { background-color: var(--primary); }
+        .btn-solution { background-color: #f59e0b; display: none; }
+        .btn-next { background-color: var(--secondary); }
+
+        .feedback {
+            margin-top: 1rem; padding: 1rem;
+            border-radius: 0.5rem; font-weight: 600;
+            display: none;
+        }
+        .feedback.success { background-color: #d1fae5; color: #065f46; }
+        .feedback.error { background-color: #fee2e2; color: #991b1b; }
+
+        .solution-panel {
+            margin-top: 1rem; padding: 1rem;
+            background-color: #eff6ff;
+            border-left: 4px solid var(--primary);
+            display: none;
+        }
+        .math-step { font-family: monospace; margin-bottom: 5px; }
+
+        aside { display: flex; flex-direction: column; gap: 1rem; }
+        
+        .sidebar-card {
+            background: var(--surface);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+        
+        .formula-item {
+            border-bottom: 1px dashed #e2e8f0;
+            padding-bottom: 0.5rem; margin-bottom: 0.5rem;
+        }
+        .formula-math {
+            font-family: monospace;
+            background: #f1f5f9;
+            padding: 2px 5px;
+            border-radius: 4px;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <a href="p-controles-revisions.html" class="btn-retour">⬅ Menu</a>
+        <span style="font-size: 0.8rem; opacity: 0.8;">Physique App v2.0</span>
+    </div>
+
+    <header>
+        <h1>⚡ Énergie & Puissance</h1>
+        <span class="badge" id="score-badge">Score: 0/0</span>
+    </header>
+
+    <main>
+        <section class="workspace">
+            <div class="card">
+                <div class="question-header">
+                    <div class="question-title" id="q-title">Chargement...</div>
+                    <span class="badge" id="q-difficulty">Niveau 1</span>
+                </div>
+
+                <div class="canvas-container">
+                    <canvas id="vizCanvas" width="600" height="250"></canvas>
+                </div>
+
+                <p class="question-text" id="q-text">Appuyez sur "Nouvel Exercice"</p>
+
+                <div class="input-group">
+                    <input type="number" id="user-answer" placeholder="Votre réponse" step="0.01">
+                    <span class="unit" id="answer-unit">Unit</span>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn-primary" id="btn-check" onclick="App.checkAnswer()">Vérifier</button>
+                    <button class="btn-solution" id="btn-sol" onclick="App.showSolution()">Solution</button>
+                    <button class="btn-next" onclick="App.newQuestion()">Suivant ➜</button>
+                </div>
+
+                <div class="feedback" id="feedback-msg"></div>
+
+                <div class="solution-panel" id="solution-panel">
+                    <h3>Correction :</h3>
+                    <div id="solution-steps"></div>
+                </div>
+            </div>
+        </section>
+
+        <aside>
+            <div class="sidebar-card">
+                <h3 style="margin-bottom:10px;">📘 Formules Utiles</h3>
+                <div class="formula-item">
+                    <div>Puissance</div>
+                    <div class="formula-math">P = U × I</div>
+                </div>
+                <div class="formula-item">
+                    <div>Loi d'Ohm</div>
+                    <div class="formula-math">U = R × I</div>
+                </div>
+                <div class="formula-item">
+                    <div>Effet Joule</div>
+                    <div class="formula-math">P = U² / R</div>
+                </div>
+                <div class="formula-item">
+                    <div>Énergie</div>
+                    <div class="formula-math">E = P × t</div>
+                </div>
+                <div class="formula-item">
+                    <div>Rendement</div>
+                    <div class="formula-math">η = P_utile / P_abs</div>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <script>
+        const App = {
+            state: {
+                currentQuestion: null,
+                score: 0,
+                total: 0,
+                solved: false
+            },
+
+            exercises: [
+                {
+                    id: 'resistor',
+                    title: 'Résistance & Tension',
+                    difficulty: 'Facile',
+                    unit: 'V',
+                    generate: () => {
+                        const R = Math.floor(Math.random() * 900) + 100;
+                        const P_max = (Math.random() * 2 + 0.1).toFixed(1);
+                        const U_max = Math.sqrt(P_max * R);
+                        return {
+                            text: `Une résistance de <strong>${R} Ω</strong> accepte max <strong>${P_max} W</strong>.<br>Quelle est la tension max (U) ?`,
+                            vals: { R, P_max },
+                            answer: U_max,
+                            draw: (ctx, w, h) => App.drawResistor(ctx, w, h, R, P_max),
+                            solution: [`P = U² / R`, `U² = P × R`, `U = √(${P_max} × ${R})`, `U = ${U_max.toFixed(2)} V`]
+                        };
+                    }
+                },
+                {
+                    id: 'efficiency',
+                    title: 'Rendement & Perte',
+                    difficulty: 'Moyen',
+                    unit: 'W',
+                    generate: () => {
+                        const P_abs = Math.floor(Math.random() * 50) + 10;
+                        const eta = Math.floor(Math.random() * 8) * 5 + 5;
+                        const P_loss = P_abs * (1 - (eta/100));
+                        return {
+                            text: `Lampe de <strong>${P_abs} W</strong>. Rendement <strong>${eta}%</strong>.<br>Quelle puissance est perdue en chaleur ?`,
+                            answer: P_loss,
+                            vals: { P_abs, eta },
+                            draw: (ctx, w, h) => App.drawEfficiency(ctx, w, h, P_abs, eta),
+                            solution: [`Utile = ${eta}% de ${P_abs}`, `Perte = Total - Utile`, `Perte = ${P_abs} - ${(P_abs*eta/100).toFixed(1)}`, `Perte = ${P_loss.toFixed(2)} W`]
+                        };
+                    },
+                },
+                {
+                    id: 'battery',
+                    title: 'Batteries Série',
+                    difficulty: 'Difficile',
+                    unit: 'V',
+                    generate: () => {
+                        const u_cell = [1.2, 2, 3.5, 12][Math.floor(Math.random() * 4)];
+                        const count = Math.floor(Math.random() * 8) + 3;
+                        return {
+                            text: `Pack de <strong>${count} batteries</strong> de <strong>${u_cell}V</strong> en série.<br>Tension totale ?`,
+                            answer: u_cell * count,
+                            vals: { count, u_cell },
+                            draw: (ctx, w, h) => App.drawBatteries(ctx, w, h, count, u_cell),
+                            solution: [`Série = Addition des tensions`, `U_tot = ${count} × ${u_cell}`, `U_tot = ${(u_cell*count).toFixed(2)} V`]
+                        };
+                    }
+                },
+                {
+                    id: 'car',
+                    title: 'Autonomie Voiture',
+                    difficulty: 'Moyen',
+                    unit: 'h',
+                    generate: () => {
+                        const E = [20, 30, 40, 50, 60][Math.floor(Math.random() * 5)];
+                        const P = Math.floor(Math.random() * 15) + 10;
+                        const t = E / P;
+                        return {
+                            text: `Batterie : <strong>${E} kWh</strong>. Moteur consomme : <strong>${P} kW</strong>.<br>Autonomie en heures ?`,
+                            answer: t,
+                            vals: { E, P },
+                            draw: (ctx, w, h) => App.drawCar(ctx, w, h, E, P),
+                            solution: [`E = P × t`, `t = E / P`, `t = ${E} / ${P}`, `t = ${t.toFixed(2)} h`]
+                        };
+                    }
+                }
+            ],
+
+            init: function() {
+                this.newQuestion();
+            },
+
+            newQuestion: function() {
+                this.state.solved = false;
+                document.getElementById('user-answer').value = '';
+                document.getElementById('user-answer').disabled = false;
+                document.getElementById('feedback-msg').style.display = 'none';
+                document.getElementById('solution-panel').style.display = 'none';
+                document.getElementById('btn-sol').style.display = 'none';
+                document.getElementById('btn-check').disabled = false;
+
+                const type = this.exercises[Math.floor(Math.random() * this.exercises.length)];
+                this.state.currentQuestion = type.generate();
+                this.state.currentQuestion.typeInfo = type;
+                this.renderUI();
+            },
+
+            renderUI: function() {
+                const q = this.state.currentQuestion;
+                document.getElementById('q-title').innerText = q.typeInfo.title;
+                document.getElementById('q-difficulty').innerText = q.typeInfo.difficulty;
+                document.getElementById('q-text').innerHTML = q.text;
+                document.getElementById('answer-unit').innerText = q.typeInfo.unit;
+
+                const canvas = document.getElementById('vizCanvas');
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                // Utilisation d'une police plus grande pour le mobile
+                ctx.font = "bold 24px Arial"; 
+                if(q.draw) q.draw(ctx, canvas.width, canvas.height);
+            },
+
+            checkAnswer: function() {
+                if(this.state.solved) return;
+                const userVal = parseFloat(document.getElementById('user-answer').value);
+                const correct = this.state.currentQuestion.answer;
+                const feedback = document.getElementById('feedback-msg');
+
+                if (isNaN(userVal)) {
+                    feedback.innerText = "Entrez un chiffre !";
+                    feedback.className = "feedback error";
+                    feedback.style.display = 'block';
+                    return;
+                }
+
+                if (Math.abs(userVal - correct) < (correct * 0.05) || Math.abs(userVal - correct) < 0.1) {
+                    this.state.score++;
+                    this.state.solved = true;
+                    this.state.total++;
+                    feedback.innerHTML = "✅ Bravo !";
+                    feedback.className = "feedback success";
+                    document.getElementById('btn-check').disabled = true;
+                } else {
+                    this.state.total++;
+                    feedback.innerHTML = "❌ Erreur.";
+                    feedback.className = "feedback error";
+                }
+                feedback.style.display = 'block';
+                document.getElementById('btn-sol').style.display = 'inline-block';
+                document.getElementById('score-badge').innerText = `Score: ${this.state.score}/${this.state.total}`;
+            },
+
+            showSolution: function() {
+                document.getElementById('solution-panel').style.display = 'block';
+                document.getElementById('solution-steps').innerHTML = 
+                    this.state.currentQuestion.solution.map(s => `<div class="math-step">${s}</div>`).join('');
+                document.getElementById('solution-panel').scrollIntoView({behavior:"smooth"});
+            },
+
+            // --- DESSINS (Optimisés avec police plus grosse) ---
+            
+            drawResistor: function(ctx, w, h, R, P) {
+                const cx = w/2, cy = h/2;
+                ctx.lineWidth = 5;
+                ctx.strokeStyle = "#334155";
+                ctx.beginPath();
+                ctx.moveTo(cx-150, cy); ctx.lineTo(cx-60, cy);
+                ctx.moveTo(cx+60, cy); ctx.lineTo(cx+150, cy);
+                ctx.stroke();
+
+                ctx.fillStyle = "#cbd5e1";
+                ctx.fillRect(cx-60, cy-30, 120, 60);
+                ctx.strokeRect(cx-60, cy-30, 120, 60);
+
+                ctx.fillStyle = "#1e293b";
+                ctx.textAlign = "center";
+                ctx.fillText(`R = ${R} Ω`, cx, cy + 10);
+                ctx.fillStyle = "#ef4444";
+                ctx.fillText(`${P} W`, cx, cy - 50);
+            },
+
+            drawEfficiency: function(ctx, w, h, P, eta) {
+                const cx = w/2, cy = h/2;
+                // Entrée
+                this.drawArrow(ctx, cx-120, cy, cx-30, cy, 50, '#94a3b8');
+                // Boite
+                ctx.fillStyle = "#fef3c7"; ctx.fillRect(cx-30, cy-50, 60, 100);
+                ctx.strokeRect(cx-30, cy-50, 60, 100);
+                // Sorties
+                this.drawArrow(ctx, cx+30, cy-20, cx+120, cy-20, 30, '#10b981'); // Utile
+                this.drawArrow(ctx, cx+30, cy+30, cx+80, cy+80, 20, '#ef4444'); // Perte
+
+                ctx.fillStyle = "#1e293b";
+                ctx.fillText(`Entrée: ${P}W`, cx-120, cy-30);
+                ctx.fillText(`η=${eta}%`, cx, cy+80);
+            },
+
+            drawCar: function(ctx, w, h, E, P) {
+                const cx = w/2, cy = h/2 + 20;
+                ctx.fillStyle = "#3b82f6";
+                ctx.fillRect(cx-60, cy-40, 120, 40); // Car body
+                ctx.fillStyle = "black";
+                ctx.beginPath(); ctx.arc(cx-40, cy, 15, 0, Math.PI*2); ctx.fill();
+                ctx.beginPath(); ctx.arc(cx+40, cy, 15, 0, Math.PI*2); ctx.fill();
+
+                ctx.fillStyle = "#1e293b";
+                ctx.textAlign = "center";
+                ctx.fillText(`${E} kWh`, cx, cy - 60);
+                ctx.fillText(`Conso: ${P} kW`, cx, cy + 50);
+            },
+            
+            drawBatteries: function(ctx, w, h, n, u) {
+                const cx = w/2, cy = h/2;
+                ctx.fillStyle = "#1e293b";
+                ctx.textAlign = "center";
+                // Dessin simplifié pour mobile : juste le symbole batterie et le texte
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.moveTo(cx-50, cy); ctx.lineTo(cx-10, cy);
+                ctx.moveTo(cx-10, cy-30); ctx.lineTo(cx-10, cy+30); // Grande barre
+                ctx.moveTo(cx+10, cy-15); ctx.lineTo(cx+10, cy+15); // Petite barre
+                ctx.moveTo(cx+10, cy); ctx.lineTo(cx+50, cy);
+                ctx.stroke();
+
+                ctx.fillText(`${n} piles de ${u}V`, cx, cy + 60);
+                ctx.fillText(`en SÉRIE`, cx, cy - 50);
+            },
+
+            drawArrow: function(ctx, x1, y1, x2, y2, w, col) {
+                ctx.strokeStyle = col; ctx.lineWidth = w;
+                ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+            }
+        };
+
+        window.onload = function() { App.init(); };
+    </script>
+<style>
+    /* L'écran noir qui recouvre tout au début */
+    #page-transition-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background-color: #050505; /* Noir profond du thème */
+        z-index: 99999; /* Au-dessus de tout */
+        opacity: 1;
+        transition: opacity 0.4s ease-in-out; /* Durée de la transition */
+        pointer-events: none; /* Permet de cliquer si jamais ça bug */
+    }
+    
+    /* Classe ajoutée en JS pour rendre transparent */
+    #page-transition-overlay.hidden {
+        opacity: 0;
+    }
+</style>
+
+<div id="page-transition-overlay"></div>
+
+<script>
+    // 1. TRANSITION D'ENTRÉE (FADE IN)
+    window.addEventListener('load', () => {
+        const overlay = document.getElementById('page-transition-overlay');
+        if(overlay) {
+            // Petit délai pour être sûr que le navigateur a affiché le fond noir
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+            }, 50);
+        }
+    });
+
+    // 2. TRANSITION DE SORTIE (FADE OUT)
+    document.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', function(e) {
+            const target = this.getAttribute('href');
+            
+            // On n'anime que les liens internes réels (pas les #, pas les liens externes)
+            if (target && target !== '#' && !target.startsWith('javascript') && this.target !== '_blank') {
+                e.preventDefault(); // Bloque le changement de page immédiat
+                
+                const overlay = document.getElementById('page-transition-overlay');
+                if(overlay) {
+                    overlay.classList.remove('hidden'); // Remet le noir
+                    
+                    // Attend la fin de l'animation (0.4s) avant de changer de page
+                    setTimeout(() => {
+                        window.location.href = target;
+                    }, 400); 
+                } else {
+                    window.location.href = target; // Sécurité si l'overlay n'existe pas
+                }
+            }
+        });
+    });
+</script>
+</body>
+</html>

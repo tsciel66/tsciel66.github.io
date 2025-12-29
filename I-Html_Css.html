@@ -1,0 +1,308 @@
+<html lang="fr"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BTS-CIEL - Web Dev</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&amp;family=Fira+Code:wght@400;600&amp;display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22&gt;&lt;text y=%22.9em%22 font-size=%2290%22&gt;🌩️&lt;/text&gt;&lt;/svg&gt;">
+    
+    <style>
+        /* --- THEME CYBER / WEB --- */
+        :root {
+            --bg-color: #050505;
+            --grid-color: rgba(0, 255, 65, 0.05);
+            --card-bg: rgba(10, 20, 30, 0.8);
+            --neon-blue: #00f3ff;   /* CSS */
+            --neon-green: #00ff41;  /* Standard */
+            --neon-orange: #ff7b00; /* HTML */
+            --neon-pink: #ff0055;   /* Révisions */
+            --text-main: #e0e0e0;
+            --font-tech: 'Share Tech Mono', monospace;
+            --font-code: 'Fira Code', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-tech);
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding-top: 2rem;
+            
+            /* Fond Grille Informatique */
+            background-image: 
+                linear-gradient(var(--grid-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px),
+                radial-gradient(circle at 50% 0%, rgba(255, 123, 0, 0.1) 0%, transparent 60%); /* Lueur Orange */
+            background-size: 40px 40px, 40px 40px, 100% 100%;
+        }
+
+        .mobile-container {
+            width: 100%;
+            max-width: 400px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            padding-bottom: 4rem;
+        }
+
+        /* --- HEADER --- */
+        header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+            border-bottom: 1px solid var(--neon-orange);
+            padding-bottom: 15px;
+            position: relative;
+        }
+
+        header::after {
+            content: 'WEB_STACK_LOADED';
+            position: absolute;
+            bottom: -20px;
+            right: 0;
+            font-size: 0.6rem;
+            color: var(--neon-orange);
+            opacity: 0.7;
+        }
+
+        .back-btn {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--neon-orange);
+            color: var(--neon-orange);
+            width: 45px;
+            height: 45px;
+            border-radius: 4px; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 1.2rem;
+            transition: all 0.2s;
+            box-shadow: 0 0 10px rgba(255, 123, 0, 0.1);
+        }
+        .back-btn:hover {
+            background: var(--neon-orange);
+            color: #000;
+            box-shadow: 0 0 20px var(--neon-orange);
+        }
+
+        h2 {
+            font-size: 1.6rem;
+            font-weight: 400;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-shadow: 2px 0 var(--neon-blue), -2px 0 var(--neon-orange);
+            color: white;
+            font-family: var(--font-code);
+        }
+
+        /* --- GRILLE DE MENUS --- */
+        .grid-menu {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .folder-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.8rem;
+            text-decoration: none;
+            color: #ccc;
+            transition: all 0.3s;
+            aspect-ratio: 1 / 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Effet "Scanner" au survol */
+        .folder-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: 0.5s;
+        }
+        .folder-card:hover::before { left: 100%; }
+
+        .folder-card:active { transform: scale(0.98); }
+
+        /* STYLES SPÉCIFIQUES PAR CARTE */
+        
+        /* 1. Révisions (Rose/Rouge - Large) */
+        .card-revision {
+            grid-column: span 2; /* Prend toute la largeur */
+            border-left: 3px solid var(--neon-pink);
+            flex-direction: row; /* Icône à côté du texte */
+            aspect-ratio: auto;
+            padding: 1.2rem;
+            justify-content: start;
+        }
+        .card-revision:hover {
+            background: rgba(255, 0, 85, 0.05);
+            border-color: var(--neon-pink);
+            box-shadow: 0 0 15px rgba(255, 0, 85, 0.2);
+            color: white;
+        }
+        .card-revision .folder-title { font-size: 1.1rem; margin-left: 15px; }
+
+        /* 2. HTML (Orange) */
+        .card-html { border-left: 3px solid var(--neon-orange); }
+        .card-html:hover {
+            background: rgba(255, 123, 0, 0.05);
+            border-color: var(--neon-orange);
+            box-shadow: 0 0 15px rgba(255, 123, 0, 0.2);
+            color: white;
+        }
+
+        /* 3. CSS (Bleu) */
+        .card-css { border-left: 3px solid var(--neon-blue); }
+        .card-css:hover {
+            background: rgba(0, 243, 255, 0.05);
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
+            color: white;
+        }
+
+        .folder-icon { font-size: 2rem; filter: drop-shadow(0 0 5px rgba(255,255,255,0.2)); }
+        
+        .folder-title {
+            font-family: var(--font-code);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        /* Status dot */
+        .status-dot {
+            position: absolute;
+            top: 10px; right: 10px;
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background-color: #333;
+        }
+        .folder-card:hover .status-dot { background-color: var(--neon-green); box-shadow: 0 0 5px var(--neon-green); }
+
+        footer {
+            text-align: center;
+            font-size: 0.7rem;
+            color: #555;
+            margin-top: auto;
+            font-family: var(--font-code);
+            border-top: 1px solid #222;
+            padding-top: 10px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="mobile-container">
+        
+        <header>
+            <a href="info.html" class="back-btn">&lt;</a>
+            <h2>HTML_CSS_DEV</h2>
+        </header>
+
+        <div class="grid-menu">
+            
+            <a href="I-Html_Css-revisions_controle.html" class="folder-card card-revision">
+                <div class="status-dot"></div>
+                <span class="folder-icon" style="color: var(--neon-pink);">📝</span>
+                <span class="folder-title">Révisions Contrôle</span>
+            </a>
+
+            <a href="#" class="folder-card card-html">
+                <div class="status-dot"></div>
+                <span class="folder-icon" style="color: var(--neon-orange);">🏗️</span>
+                <span class="folder-title">HTML 5</span>
+            </a>
+
+            <a href="I-HTML_Css-Css.html" class="folder-card card-css">
+                <div class="status-dot"></div>
+                <span class="folder-icon" style="color: var(--neon-blue);">🎨</span>
+                <span class="folder-title">CSS 3</span>
+            </a>
+
+            <a href="#" class="folder-card" style="opacity: 0.3; border-style: dashed; cursor: default;">
+                <span class="folder-icon">➕</span>
+                <span class="folder-title">Coming Soon...</span>
+            </a>
+
+        </div>
+
+        <footer>othor : Tristan PITON</footer>
+
+    </div>
+<style>
+    /* L'écran noir qui recouvre tout au début */
+    #page-transition-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background-color: #050505; /* Noir profond du thème */
+        z-index: 99999; /* Au-dessus de tout */
+        opacity: 1;
+        transition: opacity 0.4s ease-in-out; /* Durée de la transition */
+        pointer-events: none; /* Permet de cliquer si jamais ça bug */
+    }
+    
+    /* Classe ajoutée en JS pour rendre transparent */
+    #page-transition-overlay.hidden {
+        opacity: 0;
+    }
+</style>
+
+<div id="page-transition-overlay" class="hidden"></div>
+
+<script>
+    // 1. TRANSITION D'ENTRÉE (FADE IN)
+    window.addEventListener('load', () => {
+        const overlay = document.getElementById('page-transition-overlay');
+        if(overlay) {
+            // Petit délai pour être sûr que le navigateur a affiché le fond noir
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+            }, 50);
+        }
+    });
+
+    // 2. TRANSITION DE SORTIE (FADE OUT)
+    document.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', function(e) {
+            const target = this.getAttribute('href');
+            
+            // On n'anime que les liens internes réels (pas les #, pas les liens externes)
+            if (target && target !== '#' && !target.startsWith('javascript') && this.target !== '_blank') {
+                e.preventDefault(); // Bloque le changement de page immédiat
+                
+                const overlay = document.getElementById('page-transition-overlay');
+                if(overlay) {
+                    overlay.classList.remove('hidden'); // Remet le noir
+                    
+                    // Attend la fin de l'animation (0.4s) avant de changer de page
+                    setTimeout(() => {
+                        window.location.href = target;
+                    }, 400); 
+                } else {
+                    window.location.href = target; // Sécurité si l'overlay n'existe pas
+                }
+            }
+        });
+    });
+</script>
+
+</body></html>

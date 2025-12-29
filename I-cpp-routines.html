@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>C++ Routines - Cyber Terminal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌩️</text></svg>">
+    
+    <style>
+        /* --- THEME GLOBAL --- */
+        :root {
+            --bg-color: #050505;
+            --grid-color: rgba(0, 255, 65, 0.05);
+            --card-bg: rgba(10, 20, 30, 0.95);
+            --neon-blue: #00f3ff;
+            --neon-green: #00ff41;
+            --neon-red: #ff0055;
+            --neon-purple: #bd00ff;
+            --text-main: #e0e0e0;
+            --text-dim: #888;
+            --font-ui: 'Share Tech Mono', monospace;
+            --font-code: 'Fira Code', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-ui);
+            min-height: 100vh;
+            /* Fond Grille Cyber */
+            background-image: 
+                linear-gradient(var(--grid-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px),
+                radial-gradient(circle at 50% 0%, rgba(0, 243, 255, 0.1) 0%, transparent 60%);
+            background-size: 40px 40px, 40px 40px, 100% 100%;
+            overflow-x: hidden;
+            overscroll-behavior-y: none;
+        }
+
+        /* --- BOUTON SWITCH MODE --- */
+        #mode-switcher {
+            position: fixed; top: 15px; right: 15px; z-index: 9999;
+            background: rgba(0,0,0,0.9);
+            color: var(--neon-blue);
+            border: 1px solid var(--neon-blue);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-family: var(--font-code);
+            font-size: 0.75rem;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
+            text-transform: uppercase;
+            backdrop-filter: blur(5px);
+        }
+
+        /* STYLES COMMUNS */
+        pre {
+            background: rgba(0,0,0,0.6);
+            border: 1px solid #333;
+            border-left: 3px solid var(--neon-purple);
+            color: #d1d1d6;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-family: var(--font-code);
+            font-size: 0.9rem;
+            margin: 10px 0;
+            line-height: 1.5;
+        }
+        
+        .code-type { color: var(--neon-blue); }
+        .code-function { color: var(--neon-green); }
+        .code-keyword { color: var(--neon-purple); }
+
+        textarea, input[type="text"] {
+            background: #000;
+            border: 1px solid #444;
+            color: var(--neon-green);
+            padding: 15px;
+            width: 100%;
+            font-family: var(--font-code);
+            font-size: 1rem;
+            border-radius: 4px;
+            margin: 10px 0;
+            resize: vertical;
+        }
+        textarea:focus, input[type="text"]:focus {
+            border-color: var(--neon-green);
+            outline: none;
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.2);
+        }
+
+        button.btn {
+            background: transparent;
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-blue);
+            padding: 12px 20px;
+            border-radius: 4px;
+            font-family: var(--font-ui);
+            text-transform: uppercase;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            transition: all 0.2s;
+            touch-action: manipulation;
+        }
+        button.btn:active { background: var(--neon-blue); color: black; }
+        
+        .feedback, .correction-box, .hint { margin-top: 15px; padding: 15px; border-radius: 4px; display: none; border: 1px solid transparent; }
+        .feedback.success { background: rgba(0, 255, 65, 0.1); border-color: var(--neon-green); color: var(--neon-green); display: block; }
+        .feedback.error { background: rgba(255, 0, 85, 0.1); border-color: var(--neon-red); color: var(--neon-red); display: block; }
+        
+        .hint { color: var(--neon-purple); border-left: 3px solid var(--neon-purple); background: rgba(189, 0, 255, 0.1); display: block; }
+        .correction-box { border-top: 1px dashed #444; }
+
+        /* HEADER MOBILE */
+        #mobile-view .ios-header {
+            position: fixed; top: 0; left: 0; right: 0; height: 60px;
+            background: rgba(5, 5, 5, 0.95);
+            border-bottom: 1px solid var(--neon-blue);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 100; backdrop-filter: blur(10px);
+        }
+        #mobile-view .header-title { font-size: 1.1rem; color: var(--neon-blue); text-shadow: 0 0 5px var(--neon-blue); }
+        #mobile-view .back-btn { 
+            position: absolute; left: 15px; 
+            color: var(--text-main); text-decoration: none; 
+            border: 1px solid #444; padding: 5px 10px; border-radius: 4px; font-size: 0.8rem;
+        }
+
+        #mobile-view .mobile-scroll-area { padding-top: 70px; padding-bottom: 100px; padding-left: 15px; padding-right: 15px; }
+
+        .ios-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-left: 3px solid var(--neon-blue);
+            margin-bottom: 20px; padding: 20px; border-radius: 6px;
+        }
+        .ios-card h2, .ios-card h3 { color: var(--neon-green); margin-bottom: 15px; border-bottom: 1px dashed #444; padding-bottom: 5px; }
+
+        /* TAB BAR MOBILE */
+        .tab-bar {
+            position: fixed; bottom: 0; left: 0; right: 0; height: 70px;
+            background: #000; border-top: 1px solid var(--neon-blue);
+            display: flex; justify-content: space-around; align-items: center;
+            z-index: 100; padding-bottom: env(safe-area-inset-bottom);
+        }
+        .tab-item { 
+            background: none; border: none; 
+            color: #555; font-family: var(--font-ui); 
+            font-size: 0.75rem; text-transform: uppercase; 
+            padding: 10px; cursor: pointer; 
+            display: flex; flex-direction: column; align-items: center; gap: 5px;
+        }
+        .tab-item.active { color: var(--neon-blue); text-shadow: 0 0 5px var(--neon-blue); }
+        .tab-icon { font-size: 1.2rem; margin-bottom: 2px; }
+        
+        .tab-content { display: none; animation: fadeIn 0.3s; }
+        .tab-content.active { display: block; }
+
+        /* DESKTOP NAV */
+        #desktop-view nav.desktop-nav {
+            position: fixed; top: 0; left: 0; right: 0;
+            background: rgba(5, 5, 5, 0.95);
+            border-bottom: 1px solid var(--neon-blue);
+            padding: 15px; z-index: 100;
+            display: flex; justify-content: center; gap: 15px;
+        }
+        .back-btn-desktop { color: var(--neon-red); text-decoration: none; border: 1px solid var(--neon-red); padding: 8px 15px; border-radius: 4px; font-weight: bold; margin-right: 20px; transition: 0.3s; }
+        .back-btn-desktop:hover { background: var(--neon-red); color: #000; }
+        .nav-btn { background: transparent; border: 1px solid #444; color: #888; padding: 8px 20px; cursor: pointer; font-family: var(--font-ui); font-size: 1rem; transition: 0.3s; }
+        .nav-btn:hover, .nav-btn.active { border-color: var(--neon-blue); color: var(--neon-blue); background: rgba(0, 243, 255, 0.05); }
+
+        .container { background: var(--card-bg); border: 1px solid var(--neon-blue); padding: 30px; margin-bottom: 30px; position: relative; animation: fadeIn 0.3s; display: none; margin-top: 80px; max-width: 1000px; margin-left: auto; margin-right: auto; }
+        .container.active { display: block; }
+        .container::before { content: ''; position: absolute; top: -1px; left: -1px; width: 10px; height: 10px; border-top: 2px solid var(--neon-green); border-left: 2px solid var(--neon-green); }
+        .container::after { content: ''; position: absolute; bottom: -1px; right: -1px; width: 10px; height: 10px; border-bottom: 2px solid var(--neon-green); border-right: 2px solid var(--neon-green); }
+
+        h1 { color: var(--neon-blue); text-transform: uppercase; border-bottom: 1px dashed var(--neon-blue); padding-bottom: 10px; margin-bottom: 20px; }
+        h2 { color: var(--neon-green); margin-top: 30px; }
+        h3 { color: var(--neon-purple); font-size: 1.1rem; margin-bottom: 10px; }
+
+        /* QCM */
+        .qcm-options label {
+            display: block; padding: 15px; margin: 10px 0;
+            border: 1px solid #333; cursor: pointer; border-radius: 4px;
+            background: rgba(255,255,255,0.02);
+        }
+        .qcm-options label:hover { border-color: var(--neon-blue); background: rgba(0, 243, 255, 0.05); }
+        input[type="radio"] { transform: scale(1.5); margin-right: 15px; accent-color: var(--neon-blue); }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        td, th { padding: 10px; border: 1px solid #333; text-align: left; }
+        th { color: var(--neon-blue); background: rgba(255,255,255,0.05); }
+
+        .exercise-box { background: rgba(255,255,255,0.02); border: 1px solid #333; padding: 20px; margin-bottom: 20px; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <button id="mode-switcher" onclick="toggleMode()">💻 MODE ORDI</button>
+
+    <div id="mobile-view" style="display:none;">
+        <header class="ios-header">
+            <a href="I-cpp.html" class="back-btn">&lt; MENU</a>
+            <div class="header-title">ROUTINES.EXE</div>
+        </header>
+
+        <div class="mobile-scroll-area">
+            
+            <div id="m-tab-cours" class="tab-content active">
+                <div class="ios-card">
+                    <h3>I. Organisation</h3>
+                    <ul style="margin-left: 20px; line-height: 1.6;">
+                        <li><span style="color:var(--neon-purple)">.h (Header)</span> : Déclarations (Prototypes)</li>
+                        <li><span style="color:var(--neon-purple)">.cpp (Source)</span> : Définitions (Corps des fonctions)</li>
+                        <li><span style="color:var(--neon-purple)">main.cpp</span> : Point d'entrée</li>
+                    </ul>
+                </div>
+
+                <div class="ios-card">
+                    <h3>II. Routines</h3>
+                    <p style="margin-bottom:5px;"><strong>1. Fonction (Return)</strong></p>
+                    <p>Une fonction retourne une valeur d'un type précis (int, float...).</p>
+                    <pre><span class="code-type">int</span> <span class="code-function">add</span>(<span class="code-type">int</span> a, <span class="code-type">int</span> b) {
+    <span class="code-keyword">return</span> a+b; 
+}</pre>
+
+                    <p style="margin-bottom:5px; margin-top:15px;"><strong>2. Procédure (Void)</strong></p>
+                    <p>Une procédure effectue une action sans retourner de valeur.</p>
+                    <pre><span class="code-type">void</span> <span class="code-function">show</span>() {
+    cout &lt;&lt; "Hi"; 
+}</pre>
+                </div>
+                
+                <div class="ios-card">
+                    <h3>III. Mémoire</h3>
+                    <p><strong>Passage par valeur :</strong> La variable d'origine est copiée. Si on la modifie dans la fonction, l'originale reste inchangée.</p>
+                </div>
+            </div>
+
+            <div id="m-tab-trace" class="tab-content">
+                <div class="ios-card" id="m-ex1-1">
+                    <h3>Ex 1-1: Procédure &amp; Valeur</h3>
+                    <pre>void le_double(int x) { ... x=x*2 ... }
+int main() { int x=5; le_double(x); }</pre>
+                    <p>Valeur finale de x dans main :</p>
+                    <input type="text" data-ans="5" placeholder="Votre réponse...">
+                    <button class="btn" onclick="checkMobileTrace('m-ex1-1')">EXECUTE</button>
+                    <div class="feedback"></div>
+                </div>
+
+                <div class="ios-card" id="m-ex2-1">
+                    <h3>Ex 2-1: Fonction Retour</h3>
+                    <pre>long le_double(int x) { return x*2; }
+int main() { ... res=le_double(x); }</pre>
+                    <p>Après appel, res =</p>
+                    <input type="text" data-ans="10" placeholder="Votre réponse...">
+                    <button class="btn" onclick="checkMobileTrace('m-ex2-1')">EXECUTE</button>
+                    <div class="feedback"></div>
+                </div>
+
+                <div class="ios-card" id="m-ex1-3">
+                    <h3>Ex 1-3: Variable Globale</h3>
+                    <pre>int x; // Globale
+void proc(int a) { x = a*2; }</pre>
+                    <p>Après appel (a=5), x =</p>
+                    <input type="text" data-ans="10" placeholder="Votre réponse...">
+                    <button class="btn" onclick="checkMobileTrace('m-ex1-3')">EXECUTE</button>
+                    <div class="feedback"></div>
+                </div>
+            </div>
+
+            <div id="m-tab-code" class="tab-content">
+                <div class="ios-card">
+                    <h3>1. Le Plus Grand</h3>
+                    <p>Écrivez la fonction <code>int estLePlusGrand(int x, int y)</code> qui retourne le plus grand des deux.</p>
+                    <textarea rows="4" placeholder="// Votre code ici..."></textarea>
+                    <button class="btn" onclick="toggleCorrection(this)">VOIR SOLUTION</button>
+                    <div class="correction-box">
+                        <pre>int estLePlusGrand(int x, int y) {
+    if (x &gt; y) return x;
+    else return y;
+}</pre>
+                    </div>
+                </div>
+
+                <div class="ios-card">
+                    <h3>2. Est Pair</h3>
+                    <p>Écrivez la fonction <code>bool estPair(int a)</code> qui retourne true si a est pair.</p>
+                    <textarea rows="4" placeholder="// Votre code ici..."></textarea>
+                    <button class="btn" onclick="toggleCorrection(this)">VOIR SOLUTION</button>
+                    <div class="correction-box">
+                        <pre>bool estPair(int a) {
+    return (a % 2 == 0);
+}</pre>
+                    </div>
+                </div>
+                
+                <div class="ios-card">
+                    <h3>3. Cercle &amp; Disque</h3>
+                    <p>Écrivez la procédure <code>void perimetreCercle(float r)</code> qui affiche le périmètre.</p>
+                    <textarea rows="4" placeholder="// Votre code ici..."></textarea>
+                    <button class="btn" onclick="toggleCorrection(this)">VOIR SOLUTION</button>
+                    <div class="correction-box">
+                        <pre>void perimetreCercle(float r) {
+    cout &lt;&lt; 2 * M_PI * r &lt;&lt; endl;
+}</pre>
+                    </div>
+                </div>
+            </div>
+
+            <div id="m-tab-quiz" class="tab-content">
+                <div class="ios-card qcm-options">
+                    <p><strong>1. Quelle est l'extension d'un fichier header ?</strong></p>
+                    <label><input type="radio" name="mq1" value="1"> .h</label>
+                    <label><input type="radio" name="mq1" value="0"> .cpp</label>
+                </div>
+
+                <div class="ios-card qcm-options">
+                    <p><strong>2. Quel mot-clé indique qu'une fonction ne retourne rien ?</strong></p>
+                    <label><input type="radio" name="mq2" value="0"> null</label>
+                    <label><input type="radio" name="mq2" value="1"> void</label>
+                </div>
+
+                <div class="ios-card qcm-options">
+                    <p><strong>3. Lors d'un passage par valeur, la variable d'origine est-elle modifiée ?</strong></p>
+                    <label><input type="radio" name="mq3" value="1"> Non, elle reste inchangée</label>
+                    <label><input type="radio" name="mq3" value="0"> Oui, elle est modifiée</label>
+                </div>
+
+                <div style="padding: 0 20px;">
+                    <button class="btn" onclick="checkMobileQuiz()">VERIFIER</button>
+                    <div id="m-quiz-result" class="feedback"></div>
+                </div>
+            </div>
+
+        </div>
+
+        <nav class="tab-bar">
+            <button class="tab-item active" onclick="switchMobileTab('m-tab-cours', this)">
+                <span class="tab-icon">📖</span> COURS
+            </button>
+            <button class="tab-item" onclick="switchMobileTab('m-tab-trace', this)">
+                <span class="tab-icon">🔍</span> TRACE
+            </button>
+            <button class="tab-item" onclick="switchMobileTab('m-tab-code', this)">
+                <span class="tab-icon">💻</span> CODE
+            </button>
+            <button class="tab-item" onclick="switchMobileTab('m-tab-quiz', this)">
+                <span class="tab-icon">✅</span> QCM
+            </button>
+        </nav>
+    </div>
+
+
+    <div id="desktop-view" style="display:none;">
+        <nav class="desktop-nav">
+            <a href="I-cpp.html" class="back-btn-desktop">✖ FERMER</a>
+            <button class="nav-btn active" onclick="showDesktopTab('course', this)">[ COURS ]</button>
+            <button class="nav-btn" onclick="showDesktopTab('video-tab', this)">[ VIDEO ]</button> 
+            <button class="nav-btn" onclick="showDesktopTab('exercises-trace', this)">[ TP_TRACE ]</button>
+            <button class="nav-btn" onclick="showDesktopTab('exercises-code', this)">[ TP_CODE ]</button>
+            <button class="nav-btn" onclick="showDesktopTab('quiz', this)">[ QCM ]</button>
+        </nav>
+
+        <div id="course" class="container active">
+            <h1>>_ README.txt</h1>
+            <p>Résumé du cours sur les Routines C++</p>
+
+            <h2>I. ORGANISATION DU CODE</h2>
+            <ul>
+                <li><strong>Header (.h)</strong> : Déclarations (Prototypes)</li>
+                <li><strong>Source (.cpp)</strong> : Définitions (Code)</li>
+                <li><strong>Main</strong> : Point d'entrée</li>
+            </ul>
+
+            <h3>Exemple Header</h3>
+            <pre>#ifndef _MA_LIBRAIRIE_H
+#define _MA_LIBRAIRIE_H
+int additionner(int a, int b);
+#endif</pre>
+
+            <h2>II. ROUTINES</h2>
+            <h3>1. La Fonction (int, float, etc.)</h3>
+            <p>Retourne une valeur.</p>
+            <pre><span class="code-type">int</span> <span class="code-function">additionner</span>(<span class="code-type">int</span> a, <span class="code-type">int</span> b) { <span class="code-keyword">return</span> a + b; }</pre>
+
+            <h3>2. La Procédure (void)</h3>
+            <p>Ne retourne rien.</p>
+            <pre><span class="code-type">void</span> <span class="code-function">afficher</span>() { cout &lt;&lt; "Hello"; }</pre>
+            
+            <h2>III. MÉMOIRE</h2>
+            <div class="hint">Passage par Valeur : La variable d'origine n'est pas modifiée.</div>
+        </div>
+
+        <div id="video-tab" class="container">
+            <h1>>_ MEDIA_PLAYER</h1>
+            <div style="background:rgba(0, 243, 255, 0.1); border:1px solid var(--neon-blue); padding:15px; margin-bottom:20px;">
+                <strong>INFO :</strong> Le fichier cible doit être <code>video_cours.mp4</code>.
+            </div>
+            <div style="background:#000; border:1px solid #333; width:100%; border-radius:4px; aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center;">
+                <video controls style="width:100%; height:100%;">
+                    <source src="video_cours.mp4" type="video/mp4">
+                    [ERREUR: CODEC_MISSING - Vidéo non trouvée]
+                </video>
+            </div>
+        </div>
+
+        <div id="exercises-trace" class="container">
+            <h1>>_ RUN_DEBUGGER</h1>
+            
+            <div class="exercise-box" id="d-ex1-1">
+                <h3>Exercice 1-1 : Procédure</h3>
+                <pre>void le_double(int x) { ... x=x*2 ... }
+int main() { int x=5; le_double(x); }</pre>
+                <table>
+                    <tr><td>Avant l'appel x =</td><td><input type="text" data-ans="5"></td></tr>
+                    <tr><td>Dans proc avant =</td><td><input type="text" data-ans="5"></td></tr>
+                    <tr><td>Dans proc après =</td><td><input type="text" data-ans="10"></td></tr>
+                    <tr><td>Après appel x =</td><td><input type="text" data-ans="5"></td></tr>
+                </table>
+                <button class="btn" onclick="checkDesktopTrace('d-ex1-1')">VERIFIER</button>
+                <div class="feedback"></div>
+                <div class="hint" style="display:none"><strong>Indice :</strong> x n'est pas modifié (copie).</div>
+            </div>
+
+            <div class="exercise-box" id="d-ex2-1">
+                <h3>Exercice 2-1 : Fonction</h3>
+                <pre>long le_double(int x) { return x*2; }
+int main() { ... res=le_double(x); }</pre>
+                <table>
+                    <tr><td>Après appel x =</td><td><input type="text" data-ans="5"></td></tr>
+                    <tr><td>Après appel resultat =</td><td><input type="text" data-ans="10"></td></tr>
+                </table>
+                <button class="btn" onclick="checkDesktopTrace('d-ex2-1')">VERIFIER</button>
+                <div class="feedback"></div>
+            </div>
+
+            <div class="exercise-box" id="d-ex1-3">
+                <h3>Exercice 1-3 : Globale</h3>
+                <pre>int x; void proc(int a) { x = a*2; }</pre>
+                <table><tr><td>Après appel x =</td><td><input type="text" data-ans="10"></td></tr></table>
+                <button class="btn" onclick="checkDesktopTrace('d-ex1-3')">VERIFIER</button>
+                <div class="feedback"></div>
+            </div>
+        </div>
+
+        <div id="exercises-code" class="container">
+            <h1>>_ COMPILER_INPUT</h1>
+
+            <div class="exercise-box">
+                <h3>1. Fonction estLePlusGrand</h3>
+                <textarea rows="5" placeholder="// Écrivez votre code ici..."></textarea>
+                <button class="btn" onclick="toggleCorrection(this)">VOIR SOLUTION</button>
+                <div class="correction-box">
+                    <pre>int estLePlusGrand(int x, int y) { return (x&gt;y)?x:y; }</pre>
+                </div>
+            </div>
+
+            <div class="exercise-box">
+                <h3>2. Fonction estPair</h3>
+                <textarea rows="5"></textarea>
+                <button class="btn" onclick="toggleCorrection(this)">VOIR SOLUTION</button>
+                <div class="correction-box">
+                    <pre>bool estPair(int a) { return (a%2==0); }</pre>
+                </div>
+            </div>
+
+            <div class="exercise-box">
+                <h3>3. Cercle &amp; Disque</h3>
+                <textarea rows="5"></textarea>
+                <button class="btn" onclick="toggleCorrection(this)">VOIR SOLUTION</button>
+                <div class="correction-box">
+                    <pre>void perimetreCercle(float r) { cout &lt;&lt; 2*M_PI*r; }</pre>
+                </div>
+            </div>
+        </div>
+
+        <div id="quiz" class="container">
+            <h1>>_ SECURITY_CHECK</h1>
+            
+            <div class="exercise-box qcm-options">
+                <p><strong>1. Extension header ?</strong></p>
+                <div class="qcm-options">
+                    <label><input type="radio" name="dq1" value="0"> .cpp</label>
+                    <label><input type="radio" name="dq1" value="1"> .h</label>
+                </div>
+            </div>
+            
+            <div class="exercise-box qcm-options">
+                <p><strong>2. Pas de retour ?</strong></p>
+                <div class="qcm-options">
+                    <label><input type="radio" name="dq2" value="0"> null</label>
+                    <label><input type="radio" name="dq2" value="1"> void</label>
+                </div>
+            </div>
+
+            <div class="exercise-box qcm-options">
+                <p><strong>3. Passage par valeur ?</strong></p>
+                <div class="qcm-options">
+                    <label><input type="radio" name="dq3" value="1"> Variable inchangée</label>
+                    <label><input type="radio" name="dq3" value="0"> Variable modifiée</label>
+                </div>
+            </div>
+
+            <button class="btn" onclick="checkDesktopQuiz()">VALIDER</button>
+            <div id="d-quiz-result" class="feedback"></div>
+        </div>
+    </div>
+
+    <script>
+        // --- LOGIQUE SWICTH MODE ---
+        let isMobile = false;
+
+        function initMode() {
+            if (window.innerWidth <= 800) setMobileMode(true);
+            else setMobileMode(false);
+        }
+        function toggleMode() { setMobileMode(!isMobile); }
+
+        function setMobileMode(mobile) {
+            isMobile = mobile;
+            const m = document.getElementById('mobile-view');
+            const d = document.getElementById('desktop-view');
+            const btn = document.getElementById('mode-switcher');
+            
+            if (isMobile) {
+                m.style.display = 'block'; d.style.display = 'none';
+                btn.innerText = "💻 MODE ORDI";
+                if(!document.querySelector('.tab-content.active')) switchMobileTab('m-tab-cours', document.querySelector('.tab-item'));
+            } else {
+                m.style.display = 'none'; d.style.display = 'block';
+                btn.innerText = "📱 MODE MOBILE";
+            }
+        }
+
+        // --- MOBILE JS ---
+        function switchMobileTab(tabId, btn) {
+            document.querySelectorAll('#mobile-view .tab-content').forEach(e => e.classList.remove('active'));
+            document.querySelectorAll('#mobile-view .tab-item').forEach(e => e.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            if(btn) btn.classList.add('active');
+            window.scrollTo(0,0);
+        }
+
+        function checkMobileTrace(exId) {
+            const container = document.getElementById(exId);
+            const inputs = container.querySelectorAll('input');
+            const feedback = container.querySelector('.feedback');
+            let ok = true;
+            inputs.forEach(i => {
+                if(i.value.trim() !== i.dataset.ans) { ok=false; i.style.borderColor="var(--neon-red)"; }
+                else { i.style.borderColor="var(--neon-green)"; }
+            });
+            feedback.style.display = "block";
+            feedback.className = ok ? "feedback success" : "feedback error";
+            feedback.innerText = ok ? "> SUCCÈS : VALEURS CORRECTES" : "> ERREUR : VALEURS INCORRECTES";
+        }
+
+        function checkMobileQuiz() {
+            let s=0; 
+            if(document.querySelector('input[name="mq1"]:checked')?.value === "1") s++;
+            if(document.querySelector('input[name="mq2"]:checked')?.value === "1") s++;
+            if(document.querySelector('input[name="mq3"]:checked')?.value === "1") s++;
+            const res = document.getElementById('m-quiz-result');
+            res.style.display="block";
+            res.className = s===3 ? "feedback success" : "feedback error";
+            res.innerText = `> SCORE : ${s} / 3`;
+        }
+
+        // --- DESKTOP JS ---
+        let errorCounts = {};
+        function showDesktopTab(tabId, btn) {
+            document.querySelectorAll('#desktop-view .container').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('#desktop-view .nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        function checkDesktopTrace(exId) {
+            const container = document.getElementById(exId);
+            const inputs = container.querySelectorAll('input');
+            const feedback = container.querySelector('.feedback');
+            const hint = container.querySelector('.hint');
+            if(!errorCounts[exId]) errorCounts[exId]=0;
+            
+            let ok = true;
+            inputs.forEach(i => {
+                if(i.value.trim() !== i.dataset.ans) { ok=false; i.style.borderColor="var(--neon-red)"; }
+                else { i.style.borderColor="var(--neon-green)"; }
+            });
+            
+            feedback.style.display = "block";
+            if(ok) {
+                feedback.innerText="> SUCCÈS"; feedback.className="feedback success";
+                if(hint) hint.style.display="none";
+            } else {
+                errorCounts[exId]++;
+                feedback.innerText=`> ERREUR (Essai ${errorCounts[exId]})`; feedback.className="feedback error";
+                if(hint && errorCounts[exId]>=3) hint.style.display="block";
+            }
+        }
+
+        function checkDesktopQuiz() {
+            let s=0;
+            if(document.querySelector('input[name="dq1"]:checked')?.value === "1") s++;
+            if(document.querySelector('input[name="dq2"]:checked')?.value === "1") s++;
+            if(document.querySelector('input[name="dq3"]:checked')?.value === "1") s++;
+            const res = document.getElementById('d-quiz-result');
+            res.style.display="block";
+            res.className = s===3 ? "feedback success" : "feedback error";
+            res.innerText = `> SCORE : ${s} / 3`;
+        }
+
+        // --- SHARED ---
+        function toggleCorrection(btn) {
+            const box = btn.nextElementSibling;
+            if(box.style.display==="block") { box.style.display="none"; btn.innerText="VOIR SOLUTION"; }
+            else { box.style.display="block"; btn.innerText="MASQUER"; }
+        }
+
+        // Init
+        initMode();
+        window.addEventListener('resize', () => { /* Auto-switch optionnel */ });
+    </script>
+<style>
+    /* L'écran noir qui recouvre tout au début */
+    #page-transition-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background-color: #050505; /* Noir profond du thème */
+        z-index: 99999; /* Au-dessus de tout */
+        opacity: 1;
+        transition: opacity 0.4s ease-in-out; /* Durée de la transition */
+        pointer-events: none; /* Permet de cliquer si jamais ça bug */
+    }
+    
+    /* Classe ajoutée en JS pour rendre transparent */
+    #page-transition-overlay.hidden {
+        opacity: 0;
+    }
+</style>
+
+<div id="page-transition-overlay"></div>
+
+<script>
+    // 1. TRANSITION D'ENTRÉE (FADE IN)
+    window.addEventListener('load', () => {
+        const overlay = document.getElementById('page-transition-overlay');
+        if(overlay) {
+            // Petit délai pour être sûr que le navigateur a affiché le fond noir
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+            }, 50);
+        }
+    });
+
+    // 2. TRANSITION DE SORTIE (FADE OUT)
+    document.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', function(e) {
+            const target = this.getAttribute('href');
+            
+            // On n'anime que les liens internes réels (pas les #, pas les liens externes)
+            if (target && target !== '#' && !target.startsWith('javascript') && this.target !== '_blank') {
+                e.preventDefault(); // Bloque le changement de page immédiat
+                
+                const overlay = document.getElementById('page-transition-overlay');
+                if(overlay) {
+                    overlay.classList.remove('hidden'); // Remet le noir
+                    
+                    // Attend la fin de l'animation (0.4s) avant de changer de page
+                    setTimeout(() => {
+                        window.location.href = target;
+                    }, 400); 
+                } else {
+                    window.location.href = target; // Sécurité si l'overlay n'existe pas
+                }
+            }
+        });
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C++ Organisation - Cyber Terminal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌩️</text></svg>">
+    
+    <style>
+        /* --- THEME GLOBAL --- */
+        :root {
+            --bg-color: #050505;
+            --grid-color: rgba(0, 255, 65, 0.05);
+            --card-bg: rgba(10, 20, 30, 0.95);
+            --neon-blue: #00f3ff;
+            --neon-green: #00ff41;
+            --neon-red: #ff0055;
+            --neon-purple: #bd00ff;
+            --neon-yellow: #f5e642;
+            --text-main: #e0e0e0;
+            --text-dim: #888;
+            --font-ui: 'Share Tech Mono', monospace;
+            --font-code: 'Fira Code', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-ui);
+            min-height: 100vh;
+            /* Fond Grille Cyber */
+            background-image: 
+                linear-gradient(var(--grid-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px),
+                radial-gradient(circle at 50% 0%, rgba(245, 230, 66, 0.1) 0%, transparent 60%);
+            background-size: 40px 40px, 40px 40px, 100% 100%;
+            overflow-x: hidden;
+            padding-top: 80px; /* Espace pour la nav fixe desktop */
+        }
+
+        /* --- NAVIGATION --- */
+        nav {
+            position: fixed; top: 0; left: 0; right: 0;
+            background: rgba(5, 5, 5, 0.95);
+            border-bottom: 1px solid var(--neon-yellow);
+            padding: 15px; z-index: 100;
+            display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;
+        }
+
+        .back-btn {
+            position: absolute; left: 20px; top: 15px;
+            color: var(--neon-blue); text-decoration: none; border: 1px solid var(--neon-blue);
+            padding: 8px 15px; border-radius: 4px; font-weight: bold; transition: 0.3s;
+        }
+        .back-btn:hover { background: var(--neon-blue); color: #000; box-shadow: 0 0 10px var(--neon-blue); }
+
+        .nav-btn {
+            background: transparent; border: 1px solid #444; color: #888;
+            padding: 8px 20px; cursor: pointer; font-family: var(--font-ui); font-size: 1rem;
+            transition: 0.3s;
+        }
+        .nav-btn:hover, .nav-btn.active {
+            border-color: var(--neon-yellow); color: var(--neon-yellow);
+            box-shadow: 0 0 10px rgba(245, 230, 66, 0.2);
+            background: rgba(245, 230, 66, 0.05);
+        }
+
+        /* --- CONTENEUR --- */
+        .container {
+            max-width: 1100px; margin: 0 auto; padding: 20px;
+        }
+
+        .section {
+            display: none;
+            animation: fadeIn 0.5s;
+            background: var(--card-bg);
+            border: 1px solid var(--neon-yellow);
+            padding: 30px; position: relative;
+            margin-bottom: 30px;
+        }
+        .section.active { display: block; }
+
+        /* Décoration coins */
+        .section::before { content: ''; position: absolute; top: -1px; left: -1px; width: 10px; height: 10px; border-top: 2px solid var(--neon-green); border-left: 2px solid var(--neon-green); }
+        .section::after { content: ''; position: absolute; bottom: -1px; right: -1px; width: 10px; height: 10px; border-bottom: 2px solid var(--neon-green); border-right: 2px solid var(--neon-green); }
+
+        h1, h2 { color: var(--neon-yellow); text-transform: uppercase; border-bottom: 1px dashed var(--neon-yellow); padding-bottom: 10px; margin-bottom: 20px; }
+        
+        /* --- BLOCS DE CODE & PUZZLE --- */
+        .code-block {
+            background-color: #000;
+            color: var(--neon-green);
+            padding: 12px;
+            border-radius: 4px;
+            font-family: var(--font-code);
+            cursor: pointer;
+            border: 1px solid #444;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+            transition: all 0.2s;
+            position: relative;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+
+        .code-block:hover {
+            transform: translateX(5px);
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
+        }
+        
+        .code-block.selected {
+            border-color: var(--neon-yellow);
+            background-color: rgba(245, 230, 66, 0.1);
+            box-shadow: 0 0 15px var(--neon-yellow);
+        }
+
+        /* Exercice 1 : Slots */
+        .puzzle-wrapper { display: flex; flex-direction: row; gap: 30px; }
+        .source-column { flex: 1; border-right: 1px dashed #444; padding-right: 20px; }
+        .target-column { flex: 1.5; }
+
+        .solution-slot {
+            background-color: rgba(255,255,255,0.02);
+            border: 2px dashed #444;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 15px;
+            min-height: 50px;
+            transition: 0.3s;
+        }
+        .solution-slot.filled {
+            border-style: solid;
+            border-color: var(--neon-green);
+            background-color: rgba(0, 255, 65, 0.05);
+        }
+        .slot-label { color: var(--neon-purple); font-family: var(--font-code); font-size: 0.8rem; margin-bottom: 5px; display: block; }
+        .sub-label { color: #666; font-size: 0.75rem; display: block; margin-left: 10px; }
+
+        /* Exercice 2 : Fichiers */
+        .hard-wrapper { display: flex; flex-direction: column; gap: 20px; }
+        #hard-source-container {
+            display: flex; flex-wrap: wrap; gap: 10px; padding: 15px;
+            background: rgba(0,0,0,0.5); border: 1px solid #444; min-height: 80px;
+        }
+        #hard-source-container .code-block { width: auto; flex-grow: 0; margin: 0; }
+
+        .files-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+        .file-box {
+            background: #080808; border: 1px solid #444; border-radius: 4px;
+            display: flex; flex-direction: column; height: 100%;
+        }
+        .file-header {
+            padding: 10px; text-align: center; font-family: var(--font-code); font-weight: bold; color: #000;
+        }
+        .header-h { background: var(--neon-purple); }
+        .header-cpp { background: var(--neon-red); }
+        .header-main { background: var(--neon-blue); }
+
+        .file-content {
+            padding: 10px; flex-grow: 1; min-height: 200px;
+            border-top: 1px solid #333;
+        }
+
+        /* --- BOUTONS D'ACTION --- */
+        button.action-btn {
+            background: transparent;
+            border: 1px solid var(--neon-yellow); color: var(--neon-yellow);
+            padding: 12px 20px; border-radius: 4px; cursor: pointer;
+            font-family: var(--font-ui); text-transform: uppercase; font-size: 1rem;
+            margin-top: 20px; width: 100%; transition: 0.2s;
+        }
+        button.action-btn:hover { background: var(--neon-yellow); color: #000; box-shadow: 0 0 15px var(--neon-yellow); }
+        
+        button.action-btn.reset { border-color: #666; color: #888; }
+        button.action-btn.reset:hover { background: #666; color: #fff; box-shadow: none; }
+
+        /* --- FEEDBACK --- */
+        .result-box { margin-top: 15px; text-align: center; padding: 10px; border-radius: 4px; font-weight: bold; }
+        .success { color: var(--neon-green); border: 1px solid var(--neon-green); background: rgba(0, 255, 65, 0.1); }
+        .error { color: var(--neon-red); border: 1px solid var(--neon-red); background: rgba(255, 0, 85, 0.1); }
+
+        /* --- COURS & QUIZ --- */
+        .concept-box { 
+            border-left: 3px solid var(--neon-blue); 
+            background: rgba(0, 243, 255, 0.05); 
+            padding: 15px; margin-bottom: 15px; 
+        }
+        .concept-box strong { color: var(--neon-blue); }
+        code { background: #222; color: var(--neon-green); padding: 2px 5px; font-family: var(--font-code); }
+
+        .quiz-question { margin-bottom: 20px; background: rgba(255,255,255,0.02); padding: 15px; border: 1px solid #333; }
+        .options label { 
+            display: block; margin: 8px 0; cursor: pointer; padding: 10px; 
+            border: 1px solid #444; transition: 0.2s; 
+        }
+        .options label:hover { border-color: var(--neon-blue); background: rgba(0,243,255,0.05); }
+        input[type="radio"] { accent-color: var(--neon-yellow); margin-right: 10px; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- RESPONSIVE / MOBILE OPTIMIZED --- */
+        @media (max-width: 900px) {
+            
+            /* 1. Navigation Mobile */
+            nav {
+                justify-content: flex-start;
+                overflow-x: auto; /* Scroll horizontal pour le menu */
+                white-space: nowrap;
+                padding: 10px;
+                -webkit-overflow-scrolling: touch;
+                gap: 10px;
+            }
+            nav::-webkit-scrollbar { height: 4px; }
+            nav::-webkit-scrollbar-thumb { background: var(--neon-blue); border-radius: 2px; }
+
+            .nav-btn {
+                flex: 0 0 auto;
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
+
+            .back-btn {
+                position: static;
+                display: inline-block;
+                margin-right: 10px;
+                background: rgba(0, 243, 255, 0.1);
+            }
+
+            /* 2. Layout général */
+            body {
+                padding-top: 110px; /* Plus d'espace pour le header mobile */
+                background-size: 20px 20px, 20px 20px, 100% 100%;
+            }
+
+            .container { padding: 10px; width: 100%; }
+            .section { padding: 15px; }
+
+            /* 3. Exercice 1 (Puzzle Vertical) */
+            .puzzle-wrapper { flex-direction: column; }
+            .source-column { 
+                border-right: none; 
+                border-bottom: 1px dashed #444; 
+                padding-bottom: 20px; 
+                margin-bottom: 20px;
+                max-height: 200px;
+                overflow-y: auto; 
+            }
+
+            /* 4. Exercice 2 (Fichiers & Sticky Header) */
+            .files-grid { grid-template-columns: 1fr; }
+
+            /* Le conteneur de pièces reste collé en haut quand on scroll */
+            #hard-source-container {
+                position: sticky;
+                top: 75px; 
+                z-index: 50;
+                background: rgba(10, 20, 30, 0.95);
+                border: 1px solid var(--neon-yellow);
+                box-shadow: 0 5px 15px rgba(0,0,0,0.8);
+                padding: 10px;
+                margin-bottom: 15px;
+                max-height: 150px;
+                overflow-y: auto;
+            }
+
+            /* Optimisation tactile (Doigts plus gros que souris) */
+            .code-block {
+                padding: 15px; 
+                font-size: 0.8rem;
+                margin-bottom: 10px;
+                touch-action: manipulation;
+            }
+            
+            .solution-slot { min-height: 60px; }
+            .options label { padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a href="I-cpp.html" class="back-btn">✖ MENU</a>
+    <button onclick="showSection('intro')" class="nav-btn active">NOTES_COURS</button>
+    <button onclick="showSection('exercise')" class="nav-btn">PUZZLE_CODE</button>
+    <button onclick="showSection('hard')" class="nav-btn">MODULARITY</button>
+    <button onclick="showSection('quiz')" class="nav-btn">QUIZ_CHECK</button>
+</nav>
+
+<div class="container">
+
+    <div id="intro" class="section active">
+        <h1>>_ STRUCTURING_CODE...</h1>
+        <p>Pour qu'un projet C++ soit maintenable, il doit suivre une architecture stricte.</p>
+
+        <div class="concept-box" style="border-color: var(--neon-yellow);">
+            <strong>1. Inclusions (#include)</strong><br>
+            Importation des librairies nécessaires.<br>
+            <code>#include &lt;iostream&gt;</code>
+        </div>
+
+        <div class="concept-box" style="border-color: var(--neon-green);">
+            <strong>2. Variables Globales</strong><br>
+            Déclarées hors des fonctions. Visibles partout (à éviter si possible).<br>
+            <code>int g_score = 0;</code>
+        </div>
+
+        <div class="concept-box" style="border-color: var(--neon-purple);">
+            <strong>3. Prototypes (Déclarations)</strong><br>
+            Annonce des fonctions au compilateur avant leur utilisation.<br>
+            <code>void afficherMenu();</code>
+        </div>
+
+        <div class="concept-box" style="border-color: var(--neon-blue);">
+            <strong>4. Fonction Main()</strong><br>
+            Le point d'entrée unique du programme.<br>
+            <code>int main() { ... }</code>
+        </div>
+
+        <div class="concept-box" style="border-color: var(--neon-red);">
+            <strong>5. Définitions</strong><br>
+            Le code réel des fonctions, placé après le main pour la lisibilité.
+        </div>
+    </div>
+
+    <div id="exercise" class="section">
+        <h1>>_ REASSEMBLE_SOURCE_CODE</h1>
+        <p>Glissez (cliquez) les blocs pour reconstruire la structure d'un fichier C++ unique.</p>
+
+        <div class="puzzle-wrapper">
+            <div class="source-column">
+                <p style="color:var(--neon-blue); margin-bottom:10px;">[ FRAGMENTS ]</p>
+                <div id="source-container"></div>
+            </div>
+
+            <div class="target-column">
+                <p style="color:var(--neon-yellow); margin-bottom:10px;">[ TARGET_FILE.CPP ]</p>
+                
+                <div class="solution-slot" data-step="1">
+                    <span class="slot-label">// 01. INCLUDES</span>
+                    <div class="slot-content"></div>
+                </div>
+                <div class="solution-slot" data-step="2">
+                    <span class="slot-label">// 02. GLOBALS</span>
+                    <div class="slot-content"></div>
+                </div>
+                <div class="solution-slot" data-step="3">
+                    <span class="slot-label">// 03. PROTOTYPES</span>
+                    <div class="slot-content"></div>
+                </div>
+                <div class="solution-slot" data-step="4">
+                    <span class="slot-label">// 04. MAIN FUNCTION</span>
+                    <span class="sub-label">... Entry Point ...</span>
+                    <div class="slot-content"></div>
+                </div>
+                <div class="solution-slot" data-step="5">
+                    <span class="slot-label">// 05. DEFINITIONS</span>
+                    <div class="slot-content"></div>
+                </div>
+            </div>
+        </div>
+
+        <button onclick="checkPuzzle()" class="action-btn">COMPILE & CHECK</button>
+        <button onclick="initPuzzle()" class="action-btn reset">RESET_MEMORY</button>
+        <div id="result-exercise" class="result-box"></div>
+    </div>
+
+    <div id="hard" class="section">
+        <h1>>_ SPLIT_MODULES</h1>
+        <p>Séparez le code en 3 fichiers : Header (.h), Source (.cpp) et Main.</p>
+        <p style="font-size:0.9rem; color:#888;">1. Cliquez sur un bloc pour le sélectionner (Jaune).<br>2. Cliquez sur la zone de fichier cible.</p>
+
+        <div class="hard-wrapper">
+            <div style="background:transparent; padding:0;">
+                <span style="color:var(--text-dim)">// UNORGANIZED_BUFFER</span>
+                <div id="hard-source-container"></div>
+            </div>
+
+            <div class="files-grid">
+                <div class="file-box">
+                    <div class="file-header header-h">MathLib.h</div>
+                    <div class="file-content" id="dest-h" onclick="placeInFile('h')"></div>
+                </div>
+
+                <div class="file-box">
+                    <div class="file-header header-cpp">MathLib.cpp</div>
+                    <div class="file-content" id="dest-cpp" onclick="placeInFile('cpp')"></div>
+                </div>
+
+                <div class="file-box">
+                    <div class="file-header header-main">main.cpp</div>
+                    <div class="file-content" id="dest-main" onclick="placeInFile('main')"></div>
+                </div>
+            </div>
+        </div>
+
+        <button onclick="checkHardPuzzle()" class="action-btn">LINK & BUILD</button>
+        <button onclick="initHardPuzzle()" class="action-btn reset">FLUSH_FILES</button>
+        <div id="result-hard" class="result-box"></div>
+    </div>
+
+    <div id="quiz" class="section">
+        <h1>>_ SYSTEM_INTEGRITY_CHECK</h1>
+        
+        <div class="quiz-question">
+            <p><strong>1. Où déclare-t-on les prototypes dans un fichier unique ?</strong></p>
+            <div class="options">
+                <label><input type="radio" name="q1" value="a"> Après le main()</label>
+                <label><input type="radio" name="q1" value="b"> Avant le main()</label>
+                <label><input type="radio" name="q1" value="c"> Dans le main()</label>
+            </div>
+        </div>
+
+        <div class="quiz-question">
+            <p><strong>2. Syntaxe pour inclure une librairie locale (même dossier) ?</strong></p>
+            <div class="options">
+                <label><input type="radio" name="q2" value="a"> #include &lt;lib.h&gt;</label>
+                <label><input type="radio" name="q2" value="b"> #include "lib.h"</label>
+                <label><input type="radio" name="q2" value="c"> import lib</label>
+            </div>
+        </div>
+
+        <div class="quiz-question">
+            <p><strong>3. Que contient le fichier .h ?</strong></p>
+            <div class="options">
+                <label><input type="radio" name="q3" value="a"> Le code complet</label>
+                <label><input type="radio" name="q3" value="b"> Le main()</label>
+                <label><input type="radio" name="q3" value="c"> Les déclarations (prototypes)</label>
+            </div>
+        </div>
+
+        <div class="quiz-question">
+            <p><strong>4. Rôle de #ifndef / #define / #endif ?</strong></p>
+            <div class="options">
+                <label><input type="radio" name="q4" value="a"> Optimisation</label>
+                <label><input type="radio" name="q4" value="b"> Include Guards (éviter doublons)</label>
+                <label><input type="radio" name="q4" value="c"> Commentaires</label>
+            </div>
+        </div>
+
+        <div class="quiz-question">
+            <p><strong>5. Le fichier .cpp est compilé en...</strong></p>
+            <div class="options">
+                <label><input type="radio" name="q5" value="a"> Fichier Objet (.o)</label>
+                <label><input type="radio" name="q5" value="b"> Exécutable (.exe)</label>
+                <label><input type="radio" name="q5" value="c"> Texte (.txt)</label>
+            </div>
+        </div>
+
+        <div class="quiz-question">
+            <p><strong>6. Outil de documentation standard ?</strong></p>
+            <div class="options">
+                <label><input type="radio" name="q6" value="a"> Doxygen</label>
+                <label><input type="radio" name="q6" value="b"> GitHub</label>
+                <label><input type="radio" name="q6" value="c"> Linker</label>
+            </div>
+        </div>
+
+        <button onclick="checkQuiz()" class="action-btn">VERIFY_ANSWERS</button>
+        <div id="result-quiz" class="result-box"></div>
+    </div>
+
+</div>
+
+<script>
+    // --- NAVIGATION ---
+    function showSection(id) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        
+        const buttons = document.querySelectorAll('nav button');
+        if(id === 'intro') buttons[0].classList.add('active');
+        if(id === 'exercise') buttons[1].classList.add('active');
+        if(id === 'hard') buttons[2].classList.add('active');
+        if(id === 'quiz') buttons[3].classList.add('active');
+    }
+
+    // --- PUZZLE 1 LOGIC ---
+    const puzzlePieces = [
+        { id: 1, code: "#include <iostream>\nusing namespace std;", correctStep: 1 },
+        { id: 2, code: "int maVariable1 = 1;\nint maVariable2 = 2;", correctStep: 2 },
+        { id: 3, code: "int additionner(int a, int b);\nvoid afficherMsg(string msg);", correctStep: 3 },
+        { id: 4, code: "int main() {\n  cout << additionner(v1, v2);\n  afficherMsg(\"Fin\");\n  return 0;\n}", correctStep: 4 },
+        { id: 5, code: "int additionner(int a, int b) {\n  return a + b;\n}\nvoid afficherMsg(string m) {\n  cout << m << endl;\n}", correctStep: 5 }
+    ];
+
+    let filledSlots = { 1: null, 2: null, 3: null, 4: null, 5: null };
+
+    function shuffle(array) { return array.sort(() => Math.random() - 0.5); }
+
+    function initPuzzle() {
+        filledSlots = { 1: null, 2: null, 3: null, 4: null, 5: null };
+        document.getElementById('result-exercise').innerText = "";
+        document.getElementById('result-exercise').className = "result-box";
+        const sourceContainer = document.getElementById('source-container');
+        sourceContainer.innerHTML = "";
+        
+        document.querySelectorAll('.slot-content').forEach(slot => {
+            slot.innerHTML = "";
+            slot.parentElement.classList.remove('filled');
+        });
+
+        const pieces = shuffle([...puzzlePieces]);
+        pieces.forEach(p => {
+            const el = document.createElement('div');
+            el.className = 'code-block';
+            el.innerText = p.code;
+            el.dataset.id = p.id;
+            el.onclick = function() { placePiece(p, el); };
+            sourceContainer.appendChild(el);
+        });
+    }
+
+    function placePiece(pieceData, element) {
+        if (element.classList.contains('used')) return;
+        let firstEmptyStep = null;
+        for (let i = 1; i <= 5; i++) {
+            if (filledSlots[i] === null) { firstEmptyStep = i; break; }
+        }
+
+        if (firstEmptyStep === null) return;
+
+        const targetSlot = document.querySelector(`.solution-slot[data-step="${firstEmptyStep}"] .slot-content`);
+        const targetContainer = document.querySelector(`.solution-slot[data-step="${firstEmptyStep}"]`);
+        
+        const clone = document.createElement('div');
+        clone.className = 'code-block';
+        clone.innerText = pieceData.code;
+        clone.style.margin = "0";
+        clone.style.border = "1px solid var(--neon-green)";
+        clone.onclick = function() { removePiece(firstEmptyStep, element, clone); };
+        targetSlot.appendChild(clone);
+
+        targetContainer.classList.add('filled');
+        filledSlots[firstEmptyStep] = pieceData.id;
+        element.style.display = 'none';
+        element.classList.add('used');
+    }
+
+    function removePiece(step, originalElement, cloneElement) {
+        cloneElement.remove();
+        document.querySelector(`.solution-slot[data-step="${step}"]`).classList.remove('filled');
+        filledSlots[step] = null;
+        originalElement.style.display = 'block';
+        originalElement.classList.remove('used');
+    }
+
+    function checkPuzzle() {
+        const resultDiv = document.getElementById('result-exercise');
+        for (let i = 1; i <= 5; i++) {
+            if (filledSlots[i] === null) {
+                resultDiv.innerText = "> ERROR: MISSING_BLOCKS";
+                resultDiv.className = "result-box error";
+                return;
+            }
+        }
+        let isCorrect = true;
+        for (let i = 1; i <= 5; i++) {
+            if (filledSlots[i] !== i) isCorrect = false;
+        }
+
+        if (isCorrect) {
+            resultDiv.innerHTML = "> SUCCESS: CODE_STRUCTURE_VALID";
+            resultDiv.className = "result-box success";
+        } else {
+            resultDiv.innerText = "> ERROR: INVALID_ORDER";
+            resultDiv.className = "result-box error";
+        }
+    }
+
+    // --- PUZZLE 2 (MODULAR) ---
+    const hardPieces = [
+        { id: 'h1', code: "#ifndef MATHLIB_H\n#define MATHLIB_H", type: 'h' },
+        { id: 'h2', code: "// Prototype\nint carre(int x);", type: 'h' },
+        { id: 'h3', code: "#endif", type: 'h' },
+        { id: 'c1', code: "#include \"MathLib.h\"", type: 'cpp' },
+        { id: 'c2', code: "// Definition\nint carre(int x) {\n  return x * x;\n}", type: 'cpp' },
+        { id: 'm1', code: "#include <iostream>\n#include \"MathLib.h\"", type: 'main' },
+        { id: 'm2', code: "int main() {\n  std::cout << carre(5);\n  return 0;\n}", type: 'main' }
+    ];
+
+    let selectedHardPiece = null;
+    let placedHardPieces = { h: [], cpp: [], main: [] };
+
+    function initHardPuzzle() {
+        selectedHardPiece = null;
+        placedHardPieces = { h: [], cpp: [], main: [] };
+        
+        document.getElementById('result-hard').innerText = "";
+        document.getElementById('result-hard').className = "result-box";
+
+        const container = document.getElementById('hard-source-container');
+        container.innerHTML = "";
+        document.getElementById('dest-h').innerHTML = "";
+        document.getElementById('dest-cpp').innerHTML = "";
+        document.getElementById('dest-main').innerHTML = "";
+
+        const pieces = shuffle([...hardPieces]);
+        pieces.forEach(p => {
+            const el = document.createElement('div');
+            el.className = 'code-block';
+            el.innerText = p.code;
+            el.dataset.id = p.id;
+            el.onclick = (e) => selectHardPiece(p, el, e);
+            container.appendChild(el);
+        });
+    }
+
+    function selectHardPiece(piece, element, event) {
+        event.stopPropagation();
+        if(element.parentElement.id !== 'hard-source-container') {
+             const oldType = element.parentElement.id.replace('dest-', '');
+             placedHardPieces[oldType] = placedHardPieces[oldType].filter(x => x !== piece.id);
+             document.getElementById('hard-source-container').appendChild(element);
+             element.classList.remove('selected');
+             return;
+        }
+
+        document.querySelectorAll('.code-block').forEach(b => b.classList.remove('selected'));
+        selectedHardPiece = { data: piece, el: element };
+        element.classList.add('selected');
+    }
+
+    function placeInFile(fileType) {
+        if (!selectedHardPiece) return;
+
+        const destId = 'dest-' + fileType;
+        const destContainer = document.getElementById(destId);
+        
+        destContainer.appendChild(selectedHardPiece.el);
+        selectedHardPiece.el.classList.remove('selected');
+        
+        placedHardPieces[fileType].push(selectedHardPiece.data.id);
+        selectedHardPiece = null;
+    }
+
+    function checkHardPuzzle() {
+        const resultDiv = document.getElementById('result-hard');
+        
+        const totalPlaced = placedHardPieces.h.length + placedHardPieces.cpp.length + placedHardPieces.main.length;
+        if(totalPlaced < hardPieces.length) {
+            resultDiv.innerText = "> ERROR: INCOMPLETE_DATA";
+            resultDiv.className = "result-box error";
+            return;
+        }
+
+        let errors = [];
+        if (!placedHardPieces.h.includes('h1') || !placedHardPieces.h.includes('h2') || !placedHardPieces.h.includes('h3')) errors.push("Header (.h) invalide");
+        if (placedHardPieces.h.some(id => !id.startsWith('h'))) errors.push("Code intrus dans le Header");
+
+        if (!placedHardPieces.cpp.includes('c1') || !placedHardPieces.cpp.includes('c2')) errors.push("Source (.cpp) invalide");
+        if (placedHardPieces.cpp.some(id => !id.startsWith('c'))) errors.push("Code intrus dans le Source");
+
+        if (!placedHardPieces.main.includes('m1') || !placedHardPieces.main.includes('m2')) errors.push("Main (.cpp) invalide");
+        if (placedHardPieces.main.some(id => !id.startsWith('m'))) errors.push("Code intrus dans le Main");
+
+        if (errors.length === 0) {
+            resultDiv.innerHTML = "> SUCCESS: BUILD_COMPLETE";
+            resultDiv.className = "result-box success";
+        } else {
+            resultDiv.innerHTML = "> BUILD_FAILED:<br>" + errors.join("<br>");
+            resultDiv.className = "result-box error";
+        }
+    }
+
+    // --- QUIZ ---
+    function checkQuiz() {
+        const answers = { q1: 'b', q2: 'b', q3: 'c', q4: 'b', q5: 'a', q6: 'a' }; 
+        let score = 0, total = 6;
+        let answeredCount = 0;
+
+        for (let q in answers) {
+            const selected = document.querySelector(`input[name="${q}"]:checked`);
+            if (selected) {
+                answeredCount++;
+                if (selected.value === answers[q]) score++;
+            }
+        }
+
+        const resultDiv = document.getElementById('result-quiz');
+        if (score === total) {
+            resultDiv.innerHTML = `> SCORE: ${score}/${total} [PERFECT]`;
+            resultDiv.className = "result-box success";
+        } else {
+            resultDiv.innerHTML = `> SCORE: ${score}/${total}`;
+            resultDiv.className = "result-box error";
+        }
+    }
+
+    // Init
+    window.onload = function() {
+        initPuzzle();
+        initHardPuzzle();
+    };
+</script>
+<style>
+    /* L'écran noir qui recouvre tout au début */
+    #page-transition-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background-color: #050505; /* Noir profond du thème */
+        z-index: 99999; /* Au-dessus de tout */
+        opacity: 1;
+        transition: opacity 0.4s ease-in-out; /* Durée de la transition */
+        pointer-events: none; /* Permet de cliquer si jamais ça bug */
+    }
+    
+    /* Classe ajoutée en JS pour rendre transparent */
+    #page-transition-overlay.hidden {
+        opacity: 0;
+    }
+</style>
+
+<div id="page-transition-overlay"></div>
+
+<script>
+    // 1. TRANSITION D'ENTRÉE (FADE IN)
+    window.addEventListener('load', () => {
+        const overlay = document.getElementById('page-transition-overlay');
+        if(overlay) {
+            // Petit délai pour être sûr que le navigateur a affiché le fond noir
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+            }, 50);
+        }
+    });
+
+    // 2. TRANSITION DE SORTIE (FADE OUT)
+    document.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', function(e) {
+            const target = this.getAttribute('href');
+            
+            // On n'anime que les liens internes réels (pas les #, pas les liens externes)
+            if (target && target !== '#' && !target.startsWith('javascript') && this.target !== '_blank') {
+                e.preventDefault(); // Bloque le changement de page immédiat
+                
+                const overlay = document.getElementById('page-transition-overlay');
+                if(overlay) {
+                    overlay.classList.remove('hidden'); // Remet le noir
+                    
+                    // Attend la fin de l'animation (0.4s) avant de changer de page
+                    setTimeout(() => {
+                        window.location.href = target;
+                    }, 400); 
+                } else {
+                    window.location.href = target; // Sécurité si l'overlay n'existe pas
+                }
+            }
+        });
+    });
+</script>
+</body>
+</html>

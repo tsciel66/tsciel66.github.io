@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BTS-CIEL - English Zone</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🇬🇧</text></svg>">
+    
+    <style>
+        /* --- STYLE GENERAL --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #051e3e; /* Bleu Roi Profond (Royal Navy) */
+            
+            /* Fond abstrait aux couleurs du drapeau (Bleu/Rouge/Blanc) */
+            background-image: 
+                radial-gradient(circle at 100% 0%, rgba(200, 16, 46, 0.2) 0%, transparent 40%), /* Rouge Anglais */
+                radial-gradient(circle at 0% 100%, rgba(1, 33, 105, 0.4) 0%, transparent 50%), /* Bleu Union Jack */
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px), /* Lignes fines style cahier */
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding-top: 2rem;
+        }
+
+        .mobile-container {
+            width: 100%;
+            max-width: 400px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* --- HEADER AVEC RETOUR --- */
+        header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 1rem;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%; /* Bouton rond plus élégant */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 1.2rem;
+            transition: background 0.2s;
+        }
+        .back-btn:hover { background: rgba(200, 16, 46, 0.8); border-color: transparent; }
+
+        h2 {
+            font-family: 'Playfair Display', serif; /* Police style Journal */
+            font-size: 2rem;
+            font-weight: 700;
+            font-style: italic;
+            /* Dégradé Bleu -> Rouge */
+            background: linear-gradient(to right, #ffffff 20%, #cf142b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+        }
+
+        /* --- LISTE DES OPTIONS --- */
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .option-card {
+            background: rgba(10, 25, 47, 0.85); /* Bleu très foncé presque noir */
+            border-left: 4px solid #cf142b; /* Bordure gauche Rouge */
+            border-right: 1px solid rgba(255,255,255,0.1);
+            border-top: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            
+            border-radius: 8px; /* Coins moins arrondis pour un look plus sérieux */
+            padding: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            text-decoration: none;
+            color: white;
+            transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+
+        .option-card:active { transform: scale(0.98); }
+        
+        .option-card:hover {
+            background: rgba(20, 40, 70, 0.9);
+            box-shadow: 0 8px 15px rgba(1, 33, 105, 0.3); /* Lueur bleue au survol */
+            transform: translateX(5px);
+        }
+
+        .card-icon {
+            font-size: 1.1rem;
+            font-family: 'Playfair Display', serif;
+            font-weight: bold;
+            background: #cf142b; /* Fond rouge */
+            color: white;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .card-content {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-title { 
+            font-weight: 600; 
+            font-size: 1.1rem; 
+            color: #f1f5f9;
+            letter-spacing: 0.5px;
+        }
+        
+        .card-desc { 
+            font-size: 0.8rem; 
+            color: #94a3b8; 
+            font-style: italic;
+        }
+
+        /* Label "Nouveau" ou "Populaire" style timbre */
+        .tag {
+            font-size: 0.6rem;
+            padding: 4px 8px;
+            border-radius: 2px;
+            margin-left: auto;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        /* Bleu US/UK pour les tags */
+        .tag-hot { background: #012169; color: white; border-color: #012169; }
+        .tag-quiz { background: #ffffff; color: #012169; border-color: #012169; }
+
+        footer {
+            text-align: center;
+            margin-top: auto;
+            color: #64748b;
+            font-size: 0.75rem;
+            padding-bottom: 1rem;
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="mobile-container">
+        
+        <header>
+            <a href="index.html" class="back-btn">←</a>
+            <h2>English Zone</h2>
+        </header>
+
+        <div class="options-list">
+            
+            <a href="A-listemots1.html" class="option-card">
+                <div class="card-icon">1</div>
+                <div class="card-content">
+                    <span class="card-title">Vocabulary List 1</span>
+                    <span class="card-desc">Applying for a Job</span>
+                </div>
+                <span class="tag tag-hot">Core</span>
+            </a>
+
+            <a href="A-listemots2.html" class="option-card">
+                <div class="card-icon">2</div>
+                <div class="card-content">
+                    <span class="card-title">Vocabulary List 2</span>
+                    <span class="card-desc">Working Conditions</span>
+                </div>
+                <span class="tag tag-hot">Pro</span>
+            </a>
+
+            <a href="A-ponctuation.html" class="option-card" style="border-left-color: #ffffff;"> <div class="card-icon" style="background: #012169;">?!</div> <div class="card-content">
+                    <span class="card-title">Punctuation Quiz</span>
+                    <span class="card-desc">Master the signs!</span>
+                </div>
+                <span class="tag tag-quiz">Quiz</span>
+            </a>
+
+            <a href="#" class="option-card" style="opacity: 0.6; border-left-color: #64748b;">
+                <div class="card-icon" style="background: #334155; border-color: #64748b;">...</div>
+                <div class="card-content">
+                    <span class="card-title">Coming Soon</span>
+                    <span class="card-desc">More resources...</span>
+                </div>
+            </a>
+
+        </div>
+
+        <footer>
+            @2025 - Tristan PITON
+        </footer>
+
+    </div>
+<style>
+    /* L'écran noir qui recouvre tout au début */
+    #page-transition-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background-color: #050505; /* Noir profond du thème */
+        z-index: 99999; /* Au-dessus de tout */
+        opacity: 1;
+        transition: opacity 0.4s ease-in-out; /* Durée de la transition */
+        pointer-events: none; /* Permet de cliquer si jamais ça bug */
+    }
+    
+    /* Classe ajoutée en JS pour rendre transparent */
+    #page-transition-overlay.hidden {
+        opacity: 0;
+    }
+</style>
+
+<div id="page-transition-overlay"></div>
+
+<script>
+    // 1. TRANSITION D'ENTRÉE (FADE IN)
+    window.addEventListener('load', () => {
+        const overlay = document.getElementById('page-transition-overlay');
+        if(overlay) {
+            // Petit délai pour être sûr que le navigateur a affiché le fond noir
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+            }, 50);
+        }
+    });
+
+    // 2. TRANSITION DE SORTIE (FADE OUT)
+    document.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', function(e) {
+            const target = this.getAttribute('href');
+            
+            // On n'anime que les liens internes réels (pas les #, pas les liens externes)
+            if (target && target !== '#' && !target.startsWith('javascript') && this.target !== '_blank') {
+                e.preventDefault(); // Bloque le changement de page immédiat
+                
+                const overlay = document.getElementById('page-transition-overlay');
+                if(overlay) {
+                    overlay.classList.remove('hidden'); // Remet le noir
+                    
+                    // Attend la fin de l'animation (0.4s) avant de changer de page
+                    setTimeout(() => {
+                        window.location.href = target;
+                    }, 400); 
+                } else {
+                    window.location.href = target; // Sécurité si l'overlay n'existe pas
+                }
+            }
+        });
+    });
+</script>
+</body>
+</html>

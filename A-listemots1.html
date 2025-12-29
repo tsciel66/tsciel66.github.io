@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <title>Vocab Job - Design Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌩️</text></svg>">
+    <style>
+        /* --- DESIGN GLOBAL (Style identique à listemots2) --- */
+        :root {
+            --primary-color: #6c5ce7;
+            --success-color: #00b894;
+            --error-color: #ff7675;
+            --text-dark: #2d3436;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #0f172a;
+            background: linear-gradient(45deg, #4e54c8, #8f94fb);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: var(--text-dark);
+            overscroll-behavior: none;
+        }
+
+        /* --- BACKGROUND ANIMÉ --- */
+        .circles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; z-index: 0; pointer-events: none; }
+        .circles li { position: absolute; display: block; list-style: none; width: 20px; height: 20px; background: rgba(255, 255, 255, 0.2); animation: animate 25s linear infinite; bottom: -150px; border-radius: 20%; }
+        .circles li:nth-child(1){ left: 25%; width: 80px; height: 80px; animation-delay: 0s; }
+        .circles li:nth-child(2){ left: 10%; width: 20px; height: 20px; animation-delay: 2s; animation-duration: 12s; }
+        .circles li:nth-child(3){ left: 70%; width: 20px; height: 20px; animation-delay: 4s; }
+        @keyframes animate { 0%{ transform: translateY(0) rotate(0deg); opacity: 1; border-radius: 0; } 100%{ transform: translateY(-1000px) rotate(720deg); opacity: 0; border-radius: 50%; } }
+
+        /* --- CONTENEUR --- */
+        .container {
+            position: relative; 
+            z-index: 10; 
+            background-color: rgba(255, 255, 255, 0.96);
+            padding: 30px 20px; 
+            border-radius: 25px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            width: 90%; 
+            max-width: 500px; 
+            text-align: center;
+            max-height: 90vh; 
+            overflow-y: auto;
+        }
+
+        h1 { color: #4834d4; font-weight: 700; margin: 10px 0; font-size: 1.8em; }
+        h2 { color: #636e72; font-weight: 400; font-size: 1em; margin-bottom: 20px; }
+
+        /* --- MENU --- */
+        .menu-buttons { display: flex; flex-direction: column; gap: 12px; }
+        .mode-btn {
+            background: white; border: 2px solid transparent; padding: 18px; font-size: 1em;
+            color: var(--text-dark); border-radius: 15px; cursor: pointer; font-weight: 600;
+            font-family: 'Poppins', sans-serif; box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
+            -webkit-tap-highlight-color: transparent;
+            transition: transform 0.1s;
+        }
+        .mode-btn:active { transform: scale(0.98); background: #f1f2f6; }
+        
+        .mode-btn.resume {
+            background: linear-gradient(135deg, #fdcb6e 0%, #e17055 100%);
+            color: white; border: none; display: none;
+        }
+
+        /* --- JEU --- */
+        .game-area { display: none; }
+        .progress-bar-bg { background: #dfe6e9; border-radius: 10px; height: 8px; width: 100%; margin: 15px 0; overflow: hidden; }
+        .progress-bar-fill { background: var(--primary-color); height: 100%; width: 0%; transition: width 0.3s; }
+        
+        .question-card { 
+            background: white; padding: 25px 10px; border-radius: 15px; margin-bottom: 20px; 
+            font-size: 1.5em; font-weight: 700; color: #2d3436; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05); border: 2px solid transparent;
+        }
+        .anim-pop { animation: popSuccess 0.4s ease; border-color: var(--success-color); }
+        .anim-shake { animation: shakeError 0.4s ease; border-color: var(--error-color); }
+        
+        @keyframes popSuccess { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        @keyframes shakeError { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+
+        input[type="text"] { 
+            width: 85%; padding: 15px; font-size: 16px; 
+            border: 2px solid #dfe6e9; border-radius: 12px; outline: none; 
+            margin-bottom: 15px; font-family: 'Poppins', sans-serif; 
+            -webkit-appearance: none;
+            text-align: center;
+        }
+        input[type="text"]:focus { border-color: var(--primary-color); }
+
+        .btn-action { 
+            padding: 15px 0; width: 100%; border: none; border-radius: 12px; 
+            font-size: 1em; cursor: pointer; color: white; font-weight: 600; 
+            font-family: 'Poppins', sans-serif; margin-bottom: 10px;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn-valid { background-color: var(--success-color); }
+        .btn-giveup { background-color: var(--error-color); display: none; margin-top: 5px;}
+        .btn-next { background-color: var(--primary-color); display: none; margin-top: 15px; }
+
+        .feedback { margin-top: 15px; padding: 15px; border-radius: 10px; display: none; font-size: 0.95em; line-height: 1.4em;}
+        .feedback.correct { background: #d1f7ea; color: #00947e; }
+        .feedback.almost { background: #fff3cd; color: #856404; }
+        .feedback.incorrect { background: #ffeaea; color: #d63031; }
+
+        #quiz-area { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .quiz-btn { 
+            padding: 20px 5px; border: 2px solid #dfe6e9; border-radius: 12px; 
+            cursor: pointer; background: white; font-weight: 500; 
+            font-size: 0.9em; min-height: 60px; display: flex; align-items: center; justify-content: center;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .quiz-btn:active { background: #f0f0ff; transform: scale(0.95); }
+
+        .back-menu { display:block; margin-top:20px; color:#b2bec3; font-size:0.8em; text-decoration:none; padding: 10px; }
+
+    </style>
+</head>
+<body>
+
+    <ul class="circles"><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li></ul>
+
+<div class="container">
+    
+    <div id="menu">
+        <div style="font-size: 3em; margin-bottom: 10px;">💼</div>
+        <h1>Vocabulaire Pro</h1>
+        <h2>Theme : Applying for a Job</h2>
+
+        <div class="menu-buttons">
+            <button id="btn-resume-session" class="mode-btn resume" onclick="restaurerPartieEnCours()">
+                ⏳ Reprendre ma session
+            </button>
+
+            <button class="mode-btn" onclick="lancerPartie('mix_write', false)">
+                🔄 Mixte (Tout)
+            </button>
+            
+            <button class="mode-btn" onclick="lancerPartie('write_en_fr', false)">🇬🇧 ➔ 🇫🇷 (FR)</button>
+            <button class="mode-btn" onclick="lancerPartie('write_fr_en', false)">🇫🇷 ➔ 🇬🇧 (EN)</button>
+            <button class="mode-btn" onclick="lancerPartie('quiz', false)">❓ Quiz (QCM)</button>
+        </div>
+        
+        <a href="anglais.html" class="back-menu" style="margin-top: 30px;">← Retour Menu Anglais</a>
+
+        <p style="font-size: 0.75em; color: #b2bec3; margin-top: 10px;">
+            Optimisé pour mobile.<br>Sauvegarde auto.
+        </p>
+    </div>
+
+    <div id="game" class="game-area">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+            <span id="mode-label" style="font-weight:bold; color:#6c5ce7; font-size: 0.9em;">Jeu</span>
+            <span id="counter" style="color:#aaa; font-weight:bold; font-size: 0.9em;">1 / 40</span>
+        </div>
+
+        <div class="progress-bar-bg"><div id="progress-fill" class="progress-bar-fill"></div></div>
+
+        <div id="direction-label" style="background:#e1e6fa; color:#6c5ce7; padding:4px 12px; border-radius:15px; font-size:0.75em; font-weight:600; display:inline-block; margin-bottom:10px;">Traduction</div>
+        
+        <div class="question-card" id="q-text">...</div>
+
+        <div id="input-area">
+            <input type="text" id="user-input" placeholder="Votre réponse..." autocomplete="off" autocapitalize="none" spellcheck="false">
+            <div style="display:flex; gap:10px;">
+                <button class="btn-action btn-valid" id="btn-check" onclick="verifier()">Valider</button>
+                <button class="btn-action btn-giveup" id="btn-giveup" onclick="abandonner()">Abandon</button>
+            </div>
+        </div>
+
+        <div id="quiz-area"></div>
+
+        <div id="feedback" class="feedback"></div>
+        <button id="btn-next" class="btn-action btn-next" onclick="suivant()">Suivant ➜</button>
+
+        <a href="#" onclick="menuPrincipal()" class="back-menu">Menu Anglais</a>
+    </div>
+
+</div>
+
+<script>
+    /* --- NOUVEAU VOCABULAIRE INJECTÉ ICI --- */
+    const fullList = [
+        { id: 1, en: "to apply for a job", fr: "postuler à un emploi" },
+        { id: 2, en: "an application", fr: "une candidature" },
+        { id: 3, en: "an applicant", fr: "un candidat" },
+        { id: 4, en: "classified ads", fr: "petites annonces" },
+        { id: 5, en: "a job vacancy", fr: "un poste à pourvoir" },
+        { id: 6, en: "entry-level job", fr: "poste qui accepte les débutants" },
+        { id: 7, en: "a cover letter", fr: "une lettre de motivation" },
+        { id: 8, en: "a CV (UK) / a résumé (US)", fr: "un CV" },
+        { id: 9, en: "a job centre (UK) / a job center (US)", fr: "agence pour l'emploi" },
+        { id: 10, en: "to stand out from / to get noticed", fr: "se démarquer de" },
+        { id: 11, en: "a video CV", fr: "un CV vidéo" },
+        { id: 12, en: "to promote oneself", fr: "faire son auto-promotion" },
+        { id: 13, en: "a human resource manager", fr: "un DRH" },
+        { id: 14, en: "qualifications / degrees", fr: "diplômes" },
+        { id: 15, en: "to graduate", fr: "obtenir un diplôme" },
+        { id: 16, en: "to graduate from", fr: "être diplômé de" },
+        { id: 17, en: "a graduate", fr: "un diplômé" },
+        { id: 18, en: "a background", fr: "formation" },
+        { id: 19, en: "educational background", fr: "parcours scolaire / universitaire" },
+        { id: 20, en: "to go on a training course", fr: "suivre une formation" },
+        { id: 21, en: "work experience", fr: "expérience professionnelle" },
+        { id: 22, en: "to be experienced", fr: "avoir de l'expérience" },
+        { id: 23, en: "to have abilities", fr: "avoir des capacités" },
+        { id: 24, en: "to be able to", fr: "être capable de" },
+        { id: 25, en: "to have skills in", fr: "avoir des compétences en" },
+        { id: 26, en: "to be PC literate", fr: "avoir des connaissances en informatique" },
+        { id: 27, en: "to have IT skills", fr: "avoir des compétences en informatique" },
+        { id: 28, en: "to have oral / written skills", fr: "avoir des compétences à l'oral / à l'écrit" },
+        { id: 29, en: "to have language skills", fr: "avoir des compétences langagières" },
+        { id: 30, en: "English / Spanish level", fr: "niveau en anglais / espagnol" },
+        { id: 31, en: "beginner level", fr: "niveau débutant" },
+        { id: 32, en: "intermediate level", fr: "niveau intermédiaire" },
+        { id: 33, en: "advanced level", fr: "niveau avancé" },
+        { id: 34, en: "fluent", fr: "couramment" },
+        { id: 35, en: "native / mother tongue", fr: "langue maternelle" },
+        { id: 36, en: "business level", fr: "niveau de langue commercial" },
+        { id: 37, en: "to be good / excellent at", fr: "être bon / excellent en" },
+        { id: 38, en: "to have general knowledge", fr: "avoir de la culture générale" },
+        { id: 39, en: "to have a working knowledge in", fr: "se débrouiller en" },
+        { id: 40, en: "awareness of", fr: "notion" },
+        { id: 41, en: "to be called for an interview", fr: "être convoqué à un entretien" },
+        { id: 42, en: "to go through a job interview", fr: "passer un entretien d'embauche" },
+        { id: 43, en: "to get hired", fr: "se faire embaucher" }
+    ];
+
+    /* --- MOTEUR DE JEU (Identique à listemots2) --- */
+    function levenshteinDistance(a, b) {
+        if (a.length === 0) return b.length;
+        if (b.length === 0) return a.length;
+        var matrix = [];
+        for (var i = 0; i <= b.length; i++) { matrix[i] = [i]; }
+        for (var j = 0; j <= a.length; j++) { matrix[0][j] = j; }
+        for (var i = 1; i <= b.length; i++) {
+            for (var j = 1; j <= a.length; j++) {
+                if (b.charAt(i - 1) == a.charAt(j - 1)) {
+                    matrix[i][j] = matrix[i - 1][j - 1];
+                } else {
+                    matrix[i][j] = Math.min(matrix[i - 1][j - 1] + 1, Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1));
+                }
+            }
+        }
+        return matrix[b.length][a.length];
+    }
+
+    let activeList = [], failedList = [];    
+    let currentIndex = 0, currentMode = "", questionDirection = ""; 
+    let isWaiting = false, mistakesCount = 0;
+    const STORAGE_KEY = 'vocab_job_session'; // Clé différente pour ne pas mélanger les sauvegardes
+
+    window.onload = function() { checkAutoSave(); };
+
+    function checkAutoSave() {
+        const savedSession = localStorage.getItem(STORAGE_KEY);
+        const btnResume = document.getElementById('btn-resume-session');
+        if (savedSession) {
+            btnResume.style.display = "block";
+            let data = JSON.parse(savedSession);
+            btnResume.innerText = "⏳ Reprendre (" + data.currentIndex + "/" + data.total + ")";
+        }
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if (document.getElementById('game').style.display === 'block') {
+            if (e.key === "Enter") {
+                if (isWaiting) suivant();
+                else if (currentMode !== 'quiz') verifier();
+            }
+        }
+    });
+
+    function sauvegarderEtatJeu() {
+        const etat = {
+            activeList: activeList, failedList: failedList,
+            currentIndex: currentIndex, currentMode: currentMode,
+            mistakesCount: mistakesCount, total: activeList.length
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(etat));
+    }
+
+    function restaurerPartieEnCours() {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        if (saved) {
+            activeList = saved.activeList; failedList = saved.failedList;
+            currentIndex = saved.currentIndex; currentMode = saved.currentMode;
+            mistakesCount = saved.mistakesCount;
+            demarrerInterfaceJeu();
+            chargerQuestion();
+        }
+    }
+
+    function lancerPartie(mode, isReplayErreurs) {
+        currentMode = mode;
+        if (isReplayErreurs) {
+            const savedErrors = localStorage.getItem('vocab_job_failed_list');
+            activeList = savedErrors ? JSON.parse(savedErrors) : [];
+            activeList.sort(() => Math.random() - 0.5);
+        } else {
+            activeList = [...fullList].sort(() => Math.random() - 0.5);
+        }
+        
+        failedList = []; currentIndex = 0;
+        localStorage.removeItem(STORAGE_KEY); 
+        demarrerInterfaceJeu();
+        chargerQuestion();
+    }
+
+    function demarrerInterfaceJeu() {
+        document.getElementById('menu').style.display = 'none';
+        document.getElementById('game').style.display = 'block';
+        window.scrollTo(0,0);
+        const inputArea = document.getElementById('input-area');
+        const quizArea = document.getElementById('quiz-area');
+        if (currentMode === 'quiz') {
+            inputArea.style.display = 'none';
+            quizArea.style.display = 'grid';
+        } else {
+            inputArea.style.display = 'block';
+            quizArea.style.display = 'none';
+        }
+    }
+
+    function chargerQuestion() {
+        if (currentIndex >= activeList.length) { finDeSession(); return; }
+        isWaiting = false; mistakesCount = 0;
+        const card = document.getElementById('q-text');
+        card.classList.remove('anim-pop', 'anim-shake');
+        document.getElementById('feedback').style.display = 'none';
+        document.getElementById('btn-next').style.display = 'none';
+        const btnCheck = document.getElementById('btn-check');
+        const btnGiveup = document.getElementById('btn-giveup');
+        if (currentMode !== 'quiz') {
+            btnCheck.style.display = 'block'; btnCheck.style.width = '100%'; 
+            btnGiveup.style.display = 'none';
+        }
+        const input = document.getElementById('user-input');
+        input.value = ""; input.disabled = false;
+        
+        const item = activeList[currentIndex];
+        document.getElementById('counter').innerText = `${currentIndex + 1} / ${activeList.length}`;
+        document.getElementById('progress-fill').style.width = ((currentIndex) / activeList.length) * 100 + "%";
+
+        if (currentMode === 'mix_write') questionDirection = Math.random() < 0.5 ? 'en_fr' : 'fr_en';
+        else if (currentMode === 'write_fr_en') questionDirection = 'fr_en';
+        else questionDirection = 'en_fr'; 
+
+        const badge = document.getElementById('direction-label');
+        if (currentMode === 'quiz') {
+            card.innerText = item.en;
+            badge.innerText = "Trouvez la traduction";
+            genererQuiz(item);
+        } else {
+            if (questionDirection === 'en_fr') {
+                card.innerText = item.en;
+                badge.innerText = "🇬🇧 ➔ 🇫🇷 (Français)";
+                input.placeholder = "En français...";
+            } else {
+                card.innerText = item.fr;
+                badge.innerText = "🇫🇷 ➔ 🇬🇧 (Anglais)";
+                input.placeholder = "In English...";
+            }
+        }
+        sauvegarderEtatJeu();
+    }
+
+    function verifier() {
+        if (isWaiting) return;
+        const item = activeList[currentIndex];
+        const inputVal = document.getElementById('user-input').value.trim().toLowerCase();
+        let correctAnswers = [], displayAnswer = "";
+
+        if (questionDirection === 'en_fr') {
+            correctAnswers = item.fr.toLowerCase().split(/,|\//).map(s => s.trim());
+            displayAnswer = item.fr;
+        } else {
+            correctAnswers = item.en.toLowerCase().split(/,|\//).map(s => s.trim());
+            displayAnswer = item.en;
+        }
+
+        let matchFound = false, isPerfect = false, errorCount = 0;
+        for (let ans of correctAnswers) {
+            if (inputVal === ans) { matchFound = true; isPerfect = true; break; }
+            if (ans.length > 4 && inputVal.includes(ans)) { matchFound = true; isPerfect = true; break; }
+            const dist = levenshteinDistance(inputVal, ans);
+            let maxErrors = ans.length > 8 ? 3 : (ans.length > 5 ? 2 : (ans.length > 3 ? 1 : 0));
+            if (dist <= maxErrors && ans.length > 3) { matchFound = true; isPerfect = false; errorCount = dist; break; }
+        }
+        if (matchFound) succes(isPerfect, errorCount);
+        else erreur(displayAnswer);
+    }
+
+    function succes(isPerfect, errorCount) {
+        document.getElementById('q-text').classList.add('anim-pop');
+        const feedback = document.getElementById('feedback');
+        feedback.className = isPerfect ? "feedback correct" : "feedback almost";
+        feedback.innerHTML = isPerfect ? "<strong>✅ Correct !</strong>" : `<strong>👌 Accepté !</strong> (${errorCount} faute(s))`;
+        feedback.style.display = "block";
+        terminerTour();
+    }
+
+    function erreur(bonneReponse) {
+        document.getElementById('q-text').classList.add('anim-shake');
+        setTimeout(() => document.getElementById('q-text').classList.remove('anim-shake'), 500);
+        mistakesCount++;
+        const feedback = document.getElementById('feedback');
+        feedback.className = "feedback incorrect";
+        feedback.style.display = "block";
+        
+        const btnCheck = document.getElementById('btn-check');
+        const btnGiveup = document.getElementById('btn-giveup');
+        btnCheck.style.width = '70%'; btnGiveup.style.display = 'block'; btnGiveup.style.width = '28%'; 
+
+        if (mistakesCount >= 3) {
+            feedback.innerHTML = `❌ Faux. <br>💡 Indice : <strong>${bonneReponse.substring(0,3)}...</strong>`;
+        } else {
+            feedback.innerHTML = `⚠️ Faux. Essai ${mistakesCount}/3.`;
+        }
+    }
+
+    function abandonner() {
+        const item = activeList[currentIndex];
+        if (!failedList.find(i => i.id === item.id)) failedList.push(item);
+        const reponse = questionDirection === 'en_fr' ? item.fr : item.en;
+        const feedback = document.getElementById('feedback');
+        feedback.className = "feedback incorrect";
+        feedback.innerHTML = `Réponse : <strong>${reponse}</strong>.`;
+        feedback.style.display = "block";
+        terminerTour();
+    }
+
+    function terminerTour() {
+        isWaiting = true;
+        document.getElementById('btn-check').style.display = 'none';
+        document.getElementById('btn-giveup').style.display = 'none';
+        document.getElementById('btn-next').style.display = 'block';
+        document.getElementById('user-input').disabled = true;
+        sauvegarderEtatJeu();
+    }
+
+    function suivant() {
+        currentIndex++;
+        chargerQuestion();
+    }
+
+    function genererQuiz(item) {
+        const area = document.getElementById('quiz-area');
+        area.innerHTML = "";
+        let choices = [item];
+        while (choices.length < 4) {
+            let r = fullList[Math.floor(Math.random() * fullList.length)];
+            if (!choices.includes(r)) choices.push(r);
+        }
+        choices.sort(() => Math.random() - 0.5);
+        choices.forEach((c) => {
+            let btn = document.createElement('div');
+            btn.className = "quiz-btn";
+            btn.innerText = c.fr;
+            btn.onclick = () => handleQuizClick(c, btn);
+            area.appendChild(btn);
+        });
+    }
+
+    function handleQuizClick(choiceData, btnElement) {
+        if(isWaiting) return;
+        const correctItem = activeList[currentIndex];
+        if (choiceData.id === correctItem.id) {
+            btnElement.style.background = "#d1f7ea"; btnElement.style.borderColor = "#00b894";
+            succes(true, 0);
+        } else {
+            btnElement.style.background = "#ffeaea"; btnElement.style.borderColor = "#ff7675";
+            if (!failedList.find(i => i.id === correctItem.id)) failedList.push(correctItem);
+            const feedback = document.getElementById('feedback');
+            feedback.className = "feedback incorrect";
+            feedback.innerHTML = `❌ Raté. <br>Réponse : <strong>${correctItem.fr}</strong>`;
+            feedback.style.display = "block";
+            terminerTour();
+        }
+    }
+
+    function menuPrincipal() { 
+        window.location.href = "anglais.html"; 
+    }
+
+    function finDeSession() {
+        const gameDiv = document.getElementById('game');
+        if(failedList.length > 0) localStorage.setItem('vocab_job_failed_list', JSON.stringify(failedList));
+        localStorage.removeItem(STORAGE_KEY);
+        let html = "";
+        if (failedList.length === 0) {
+            html = `
+                <div style="font-size:4em; animation: popSuccess 1s infinite;">🏆</div>
+                <h2 style="color:#00b894;">SESSION PARFAITE !</h2>
+                <button class='btn-action btn-next' style='display:block' onclick='location.reload()'>Rejouer</button>
+            `;
+        } else {
+            html = `
+                <div style="font-size:4em">📝</div>
+                <h2>Terminé !</h2>
+                <p>Score : <strong>${activeList.length - failedList.length} / ${activeList.length}</strong></p>
+                <div style="margin-top:20px;">
+                    <button class='btn-action btn-next' style='display:block; background:#6c5ce7;' onclick='lancerPartie("mix_write", true)'>
+                        🔄 Revoir (${failedList.length}) erreurs
+                    </button>
+                    <button class='mode-btn' style='border:1px solid #ccc; width:100%; margin-top:10px;' onclick='menuPrincipal()'>
+                        🏠 Menu Anglais
+                    </button>
+                </div>
+            `;
+        }
+        gameDiv.innerHTML = html;
+    }
+</script>
+<style>
+    /* L'écran noir qui recouvre tout au début */
+    #page-transition-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background-color: #050505; /* Noir profond du thème */
+        z-index: 99999; /* Au-dessus de tout */
+        opacity: 1;
+        transition: opacity 0.4s ease-in-out; /* Durée de la transition */
+        pointer-events: none; /* Permet de cliquer si jamais ça bug */
+    }
+    
+    /* Classe ajoutée en JS pour rendre transparent */
+    #page-transition-overlay.hidden {
+        opacity: 0;
+    }
+</style>
+
+<div id="page-transition-overlay"></div>
+
+<script>
+    // 1. TRANSITION D'ENTRÉE (FADE IN)
+    window.addEventListener('load', () => {
+        const overlay = document.getElementById('page-transition-overlay');
+        if(overlay) {
+            // Petit délai pour être sûr que le navigateur a affiché le fond noir
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+            }, 50);
+        }
+    });
+
+    // 2. TRANSITION DE SORTIE (FADE OUT)
+    document.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', function(e) {
+            const target = this.getAttribute('href');
+            
+            // On n'anime que les liens internes réels (pas les #, pas les liens externes)
+            if (target && target !== '#' && !target.startsWith('javascript') && this.target !== '_blank') {
+                e.preventDefault(); // Bloque le changement de page immédiat
+                
+                const overlay = document.getElementById('page-transition-overlay');
+                if(overlay) {
+                    overlay.classList.remove('hidden'); // Remet le noir
+                    
+                    // Attend la fin de l'animation (0.4s) avant de changer de page
+                    setTimeout(() => {
+                        window.location.href = target;
+                    }, 400); 
+                } else {
+                    window.location.href = target; // Sécurité si l'overlay n'existe pas
+                }
+            }
+        });
+    });
+</script>
+</body>
+</html>

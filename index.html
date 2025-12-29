@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<script>
+    // Vérification de sécurité simple
+    // Si l'utilisateur n'est pas passé par le login, on le renvoie dehors
+    if (!sessionStorage.getItem('authenticated')) {
+        window.location.href = 'login.html';
+    }
+</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BTS-CIEL - Menu</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Share+Tech+Mono&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌩️</text></svg>">
+
+    <style>
+        /* --- RESET ET BASE --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #0f172a;
+            background-image: radial-gradient(circle at 10% 20%, rgba(56, 189, 248, 0.15) 0%, transparent 20%),
+                              radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.15) 0%, transparent 20%);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .mobile-container {
+            width: 100%;
+            max-width: 400px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* --- HEADER --- */
+        header {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .app-logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #22d3ee, #818cf8);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 0 25px rgba(34, 211, 238, 0.3);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-6px); }
+            100% { transform: translateY(0px); }
+        }
+
+        h1 {
+            font-weight: 800;
+            font-size: 2.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: linear-gradient(to right, #22d3ee, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.2rem;
+        }
+
+        p.subtitle {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            font-weight: 400;
+        }
+
+        /* --- MENU --- */
+        .menu {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+
+        /* --- STYLE DES BOUTONS (MODIFIÉ POUR CENTRAGE) --- */
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center; /* MODIFIÉ : Centre le contenu (était space-between) */
+            gap: 15px;               /* AJOUTÉ : Espace entre texte et icône */
+            padding: 1.2rem 1.5rem;
+            border-radius: 16px;
+            text-decoration: none;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+            text-align: center; /* Assure l'alignement du texte si multilingue */
+        }
+
+        .btn:active { transform: scale(0.96); }
+        .btn:hover { transform: translateY(-4px); box-shadow: 0 12px 20px rgba(0, 0, 0, 0.4); }
+
+        .icon { font-size: 1.4rem; }
+
+        /* --- 1. INFO (Cyber/Terminal) --- */
+        .btn-info { 
+            background: #050505 !important; 
+            border: 1px solid #00ff41 !important; 
+            border-left: 6px solid #00ff41 !important; 
+            color: #e0e0e0 !important;
+            font-family: 'Share Tech Mono', monospace !important; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.15) !important;
+        }
+        .btn-info:hover {
+            background: rgba(0, 255, 65, 0.05) !important;
+            box-shadow: 0 0 25px rgba(0, 255, 65, 0.3) !important;
+            transform: translateX(5px) !important;
+        }
+        .btn-info .icon { filter: drop-shadow(0 0 5px #00ff41); }
+
+        /* --- 2. ANGLAIS (UK/US Theme) --- */
+        .btn-eng {
+            background: linear-gradient(135deg, #00247d 0%, #b22234 100%) !important;
+            border-left: 5px solid #cf142b !important;
+            border-right: 5px solid #3c3b6e !important;
+            border-top: 1px solid rgba(255,255,255,0.2) !important;
+            border-bottom: 1px solid rgba(255,255,255,0.2) !important;
+            color: #ffffff !important;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .btn-eng:hover {
+            background: linear-gradient(135deg, #0033b3 0%, #d9283e 100%) !important;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2) !important;
+        }
+
+        /* --- 3. MATHS (Thème Géométrie/Arithmétique) --- */
+        .btn-math {
+            background: linear-gradient(135deg, #064e3b 0%, #10b981 100%) !important;
+            border: 1px solid #34d399 !important;
+            font-family: 'Playfair Display', serif !important;
+            font-style: italic;
+            letter-spacing: 1px;
+        }
+        .btn-math:hover {
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.3) !important;
+            border-color: #6ee7b7 !important;
+        }
+
+        /* --- 4. PHYSIQUE (Thème Électricité/Sombre) --- */
+        .btn-phy {
+            background: #0f172a !important; 
+            border: 1px solid #fbbf24 !important;
+            border-bottom: 4px solid #f59e0b !important;
+            color: #fbbf24 !important;
+            text-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
+        }
+        .btn-phy:hover {
+            background: #1e293b !important;
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.4) !important;
+            transform: translateY(-2px) !important;
+        }
+        
+        /* --- BONUS --- */
+        .btn-bonus {
+            background: linear-gradient(135deg, #ea580c 0%, #fbbf24 100%);
+            border: 1px solid rgba(251, 191, 36, 0.4);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: auto;
+            padding-top: 2rem;
+            color: #475569;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        /* =========================================
+           TRANSITION OVERLAY
+           ========================================= */
+        #page-transition-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #0f172a; 
+            z-index: 99999; opacity: 1; transition: opacity 0.4s ease-in-out; pointer-events: none;
+        }
+        #page-transition-overlay.hidden { opacity: 0; }
+
+    </style>
+</head>
+<body>
+
+    <div id="page-transition-overlay"></div>
+
+    <div class="mobile-container">
+        
+        <header>
+            <div class="app-logo">🌩️</div>
+            
+            <h1>BTS-CIEL</h1>
+            <p class="subtitle">Espace de révision</p>
+        </header>
+
+        <nav class="menu">
+            
+            <a href="info.html" class="btn btn-info">
+                <span>>_ Info & Réseaux</span>
+                <span class="icon">💻</span>
+            </a>
+
+            <a href="anglais.html" class="btn btn-eng">
+                <span>Anglais</span>
+                <span class="icon">🇬🇧 | 🇺🇸</span>
+            </a>
+
+            <a href="Math.html" class="btn btn-math">
+   		        <span>Mathématiques</span>
+ 		        <span class="icon">🧮</span>
+	        </a>
+
+            <a href="physique.html" class="btn btn-phy">
+                <span>Physique App.</span>
+                <span class="icon">⚡</span>
+            </a>
+
+            <a href="#" class="btn btn-bonus">
+                <span>Programmes Bonus</span>
+                <span class="icon">🚀</span>
+            </a>
+        </nav>
+
+        <footer>
+            @2025 - Tristan PITON
+        </footer>
+
+    </div>
+
+    <script>
+        // 1. Fade In
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('page-transition-overlay').classList.add('hidden');
+            }, 50);
+        });
+
+        // 2. Fade Out
+        document.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                const target = this.getAttribute('href');
+                if (target && target !== '#' && !target.startsWith('javascript') && this.target !== '_blank') {
+                    e.preventDefault();
+                    document.getElementById('page-transition-overlay').classList.remove('hidden');
+                    setTimeout(() => { window.location.href = target; }, 400);
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>

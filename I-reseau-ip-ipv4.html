@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module : IPv4 Learning</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌩️</text></svg>">
+    
+    <style>
+        /* --- THEME CYBER IDENTIQUE --- */
+        :root {
+            --bg-color: #050505;
+            --grid-color: rgba(0, 255, 65, 0.05);
+            --card-bg: rgba(10, 20, 30, 0.95);
+            --neon-blue: #00f3ff;
+            --neon-green: #00ff41;
+            --neon-red: #ff0055;
+            --text-main: #e0e0e0;
+            --font-tech: 'Share Tech Mono', monospace;
+            --font-code: 'Fira Code', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-tech);
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            
+            /* Fond Grille */
+            background-image: 
+                linear-gradient(var(--grid-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px),
+                radial-gradient(circle at 50% 0%, rgba(0, 243, 255, 0.1) 0%, transparent 60%);
+            background-size: 40px 40px, 40px 40px, 100% 100%;
+        }
+
+        /* --- CONTAINER PRINCIPAL (Fenêtre Terminal) --- */
+        .container {
+            background: var(--card-bg);
+            border: 1px solid var(--neon-blue);
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.15);
+            max-width: 900px;
+            width: 100%;
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            height: 90vh; /* Fixe la hauteur pour scroller dedans */
+            position: relative;
+        }
+
+        /* Décoration coins */
+        .container::before {
+            content: ''; position: absolute; top: -1px; left: -1px;
+            width: 20px; height: 20px;
+            border-top: 2px solid var(--neon-green); border-left: 2px solid var(--neon-green);
+        }
+        .container::after {
+            content: ''; position: absolute; bottom: -1px; right: -1px;
+            width: 20px; height: 20px;
+            border-bottom: 2px solid var(--neon-green); border-right: 2px solid var(--neon-green);
+        }
+
+        /* --- HEADER --- */
+        .header {
+            background: rgba(0, 243, 255, 0.1);
+            border-bottom: 1px solid var(--neon-blue);
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header h1 {
+            font-family: var(--font-code);
+            font-size: 1.5rem;
+            color: var(--neon-blue);
+            text-transform: uppercase;
+            text-shadow: 0 0 5px var(--neon-blue);
+        }
+
+        .header p { font-size: 0.8rem; color: #888; }
+
+        /* --- NAVIGATION --- */
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+            padding: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .btn {
+            background: transparent;
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-blue);
+            padding: 8px 16px;
+            font-family: var(--font-tech);
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.3s;
+            text-transform: uppercase;
+        }
+
+        .btn:hover:not(:disabled) {
+            background: var(--neon-blue);
+            color: #000;
+            box-shadow: 0 0 10px var(--neon-blue);
+        }
+
+        .btn:disabled {
+            border-color: #444;
+            color: #444;
+            cursor: not-allowed;
+        }
+
+        .btn-menu { border-color: var(--neon-green); color: var(--neon-green); }
+        .btn-menu:hover { background: var(--neon-green); color: #000; box-shadow: 0 0 10px var(--neon-green); }
+
+        /* --- CONTENU SCROLLABLE --- */
+        .content {
+            padding: 30px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        /* Scrollbar custom */
+        .content::-webkit-scrollbar { width: 8px; }
+        .content::-webkit-scrollbar-track { background: #000; }
+        .content::-webkit-scrollbar-thumb { background: var(--neon-blue); border-radius: 4px; }
+
+        /* --- GRID MENU --- */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .menu-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-left: 3px solid var(--neon-blue);
+            padding: 20px;
+            cursor: pointer;
+            transition: 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .menu-card:hover {
+            border-color: var(--neon-blue);
+            background: rgba(0, 243, 255, 0.05);
+            transform: translateX(5px);
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.1);
+        }
+
+        .menu-card h3 { color: #fff; margin-bottom: 5px; font-family: var(--font-code); }
+        .menu-card p { color: #888; font-size: 0.8rem; }
+
+        /* --- STYLES CONTENU LEÇON --- */
+        h2 { color: var(--neon-green); margin-bottom: 20px; border-bottom: 1px dashed var(--neon-green); padding-bottom: 10px; }
+        h3 { color: var(--neon-blue); margin: 25px 0 10px 0; font-size: 1.1rem; }
+        p { margin-bottom: 10px; line-height: 1.6; }
+
+        .example-box {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid #444;
+            border-left: 3px solid var(--neon-blue);
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .info-box {
+            background: rgba(0, 255, 65, 0.05);
+            border: 1px solid var(--neon-green);
+            padding: 15px;
+            color: #cfc;
+        }
+
+        .warning-box {
+            background: rgba(255, 0, 85, 0.05);
+            border: 1px solid var(--neon-red);
+            padding: 15px;
+            color: #fcc;
+        }
+
+        .binary-display {
+            font-family: var(--font-code);
+            background: #000;
+            border: 1px solid #333;
+            color: var(--neon-blue);
+            padding: 15px;
+            margin: 10px 0;
+            overflow-x: auto;
+            white-space: pre;
+        }
+
+        .highlight { color: var(--neon-green); font-weight: bold; }
+
+        /* --- TABLEAUX --- */
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; border: 1px solid #333; }
+        th { background: rgba(0, 243, 255, 0.1); color: var(--neon-blue); padding: 10px; text-align: left; font-family: var(--font-code); }
+        td { border-top: 1px solid #333; padding: 10px; }
+        tr:hover { background: rgba(255,255,255,0.05); }
+
+        /* --- QUIZ --- */
+        .quiz-option {
+            padding: 15px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid #444;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .quiz-option:hover { border-color: var(--neon-blue); background: rgba(0,243,255,0.05); }
+        
+        .quiz-option.correct { border-color: var(--neon-green); background: rgba(0,255,65,0.1); color: var(--neon-green); }
+        .quiz-option.incorrect { border-color: var(--neon-red); background: rgba(255,0,85,0.1); color: var(--neon-red); }
+
+        .quiz-feedback { margin-top: 10px; font-weight: bold; }
+        .quiz-feedback.correct { color: var(--neon-green); }
+        .quiz-feedback.incorrect { color: var(--neon-red); }
+
+        /* --- INPUTS --- */
+        .input-field {
+            background: #000;
+            border: 1px solid var(--neon-blue);
+            color: #fff;
+            padding: 10px;
+            font-family: var(--font-code);
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        .input-field:focus { outline: none; box-shadow: 0 0 10px rgba(0,243,255,0.3); }
+
+        .exercise-field label { display: block; color: #888; font-size: 0.8rem; margin-bottom: 5px; }
+
+        /* Bouton Retour Menu Mobile */
+        .top-bar { display: flex; align-items: center; margin-bottom: 10px; }
+        .btn-quit { color: #888; text-decoration: none; font-size: 0.9rem; }
+        .btn-quit:hover { color: #fff; }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>IPV4_MASTER.EXE</h1>
+                <p>Status: RUNNING // User: ADMIN</p>
+            </div>
+            <a href="I-Reseau-IP.html" class="btn btn-quit">✖ SHUTDOWN</a>
+        </div>
+
+        <div class="nav-buttons">
+            <button class="btn btn-menu" onclick="showMenu()">📋 MENU</button>
+            <button class="btn btn-back" id="backBtn" onclick="goBack()" disabled>⬅ BACK</button>
+        </div>
+
+        <div class="content" id="content">
+            </div>
+    </div>
+
+    <script>
+        // --- LOGIQUE JAVASCRIPT CONSERVÉE MAIS INTÉGRÉE ---
+        let history = [];
+        let currentView = 'menu';
+
+        // Base de données des leçons (Même contenu texte, balisage légèrement adapté)
+        const lessons = {
+            intro: {
+                title: "Introduction",
+                content: `
+                    <h2>> INIT_IPV4_PROTOCOL</h2>
+                    <p>L'adressage IPv4 permet l'identification unique des hôtes sur un réseau.</p>
+                    
+                    <div class="example-box">
+                        <h3>🎯 Principe</h3>
+                        <p>Tout hôte = Une adresse IP unique (32 bits).</p>
+                    </div>
+
+                    <h3>🔢 Format Binaire (32 bits)</h3>
+                    <div class="binary-display">192.168.10.1
+⬇️
+11000000.10101000.00001010.00000001</div>
+                `
+            },
+            structure: {
+                title: "Structure IPv4",
+                content: `
+                    <h2>> ANALYZE_STRUCTURE</h2>
+                    <p>Une adresse IPv4 est divisée en deux parties :</p>
+
+                    <div class="example-box">
+                        <h3>1. NetID (Réseau)</h3>
+                        <p>Identifie le réseau. Commun à toutes les machines du même sous-réseau.</p>
+                    </div>
+
+                    <div class="example-box">
+                        <h3>2. HostID (Hôte)</h3>
+                        <p>Identifie la machine unique dans ce réseau.</p>
+                    </div>
+
+                    <div class="binary-display">NNN . XXX . XXX . HHH
+├──────────┤ ├──────┤
+  NetID     HostID</div>
+                `
+            },
+            special: {
+                title: "Adresses Spéciales",
+                content: `
+                    <h2>> DETECT_SPECIAL_ADDR</h2>
+
+                    <div class="example-box">
+                        <h3>🌐 Adresse Réseau</h3>
+                        <p>HostID = Tous les bits à 0.</p>
+                        <div class="binary-display">10.0.0.0</div>
+                    </div>
+
+                    <div class="example-box">
+                        <h3>📢 Broadcast (Diffusion)</h3>
+                        <p>HostID = Tous les bits à 1.</p>
+                        <div class="binary-display">10.255.255.255</div>
+                    </div>
+
+                    <div class="info-box">
+                        <strong>🔄 Loopback :</strong> 127.0.0.1 (localhost)
+                    </div>
+                `
+            },
+            classes: {
+                title: "Classes",
+                content: `
+                    <h2>> LOAD_CLASSES_DB</h2>
+
+                    <h3>Classe A</h3>
+                    <div class="example-box">
+                        <p>Range: 1.0.0.0 - 126.255.255.255</p>
+                        <p>Masque par défaut: 255.0.0.0 (/8)</p>
+                        <p>Nb Hôtes: <span class="highlight">16 Millions</span></p>
+                    </div>
+
+                    <h3>Classe B</h3>
+                    <div class="example-box">
+                        <p>Range: 128.0.0.0 - 191.255.255.255</p>
+                        <p>Masque par défaut: 255.255.0.0 (/16)</p>
+                        <p>Nb Hôtes: <span class="highlight">65 534</span></p>
+                    </div>
+
+                    <h3>Classe C</h3>
+                    <div class="example-box">
+                        <p>Range: 192.0.0.0 - 223.255.255.255</p>
+                        <p>Masque par défaut: 255.255.255.0 (/24)</p>
+                        <p>Nb Hôtes: <span class="highlight">254</span></p>
+                    </div>
+                `
+            },
+            private: {
+                title: "Adresses Privées",
+                content: `
+                    <h2>> PRIVATE_NETWORK_MODE</h2>
+                    <p>Adresses non routables sur Internet (LAN uniquement).</p>
+
+                    <div class="table-responsive">
+                        <table>
+                            <tr><th>Classe</th><th>Plage Privée</th></tr>
+                            <tr><td>A</td><td>10.0.0.0 à 10.255.255.255</td></tr>
+                            <tr><td>B</td><td>172.16.0.0 à 172.31.255.255</td></tr>
+                            <tr><td>C</td><td>192.168.0.0 à 192.168.255.255</td></tr>
+                        </table>
+                    </div>
+                `
+            },
+            netmask: {
+                title: "Masques",
+                content: `
+                    <h2>> CALCULATE_NETMASK</h2>
+                    <p>Le masque définit la frontière NetID / HostID.</p>
+
+                    <div class="info-box">
+                        LOGIQUE: 
+                        NetID = 1
+                        HostID = 0
+                    </div>
+
+                    <h3>Opération ET Logique (AND)</h3>
+                    <div class="binary-display">  IP:    192.168.10.55
+  MASK:  255.255.255.0
+  --------------------
+  NET:   192.168.10.0</div>
+                `
+            },
+            subnetting: {
+                title: "Sous-réseaux",
+                content: `
+                    <h2>> EXEC_SUBNETTING</h2>
+                    <p>Emprunter des bits à la partie Host pour créer des sous-réseaux.</p>
+
+                    <div class="table-responsive">
+                        <table>
+                            <tr><th>Bits</th><th>Masque (Dernier octet)</th><th>Sous-réseaux</th></tr>
+                            <tr><td>1</td><td>128</td><td>2</td></tr>
+                            <tr><td>2</td><td>192</td><td>4</td></tr>
+                            <tr><td>3</td><td>224</td><td>8</td></tr>
+                            <tr><td>4</td><td>240</td><td>16</td></tr>
+                        </table>
+                    </div>
+
+                    <div class="warning-box">
+                        Règle : Les 1 et les 0 doivent être contigus. Pas de mélange (ex: 10101 interdits).
+                    </div>
+                `
+            },
+            // QUIZ ET EXERCICES
+            quiz1: {
+                title: "Quiz 1",
+                content: `
+                    <h2>> START_QUIZ_LEVEL_1</h2>
+                    
+                    <div class="example-box">
+                        <p><strong>Q1: Taille d'une adresse IPv4 ?</strong></p>
+                        <div class="quiz-option" onclick="checkAnswer(this, false)">16 bits</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, true)">32 bits</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false)">64 bits</div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+
+                    <div class="example-box">
+                        <p><strong>Q2: Adresse de Loopback ?</strong></p>
+                        <div class="quiz-option" onclick="checkAnswer(this, false)">192.168.1.1</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, true)">127.0.0.1</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false)">10.0.0.0</div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                `
+            },
+            interactive: {
+                title: "Labo Interactif",
+                content: `
+                    <h2>> LAB_MODE_ENABLED</h2>
+                    <p>Calculez les paramètres réseau pour les cas suivants.</p>
+
+                    <div class="example-box" id="ex1">
+                        <h3>EX_01 : Classe C Standard</h3>
+                        <p>IP: <span class="highlight">192.168.50.42</span> / Masque: <span class="highlight">255.255.255.0</span></p>
+                        
+                        <div class="exercise-field">
+                            <label>Réseau:</label>
+                            <input type="text" id="ex1_reseau" class="input-field" placeholder="ex: 192.168.x.x">
+                        </div>
+                        <div class="exercise-field">
+                            <label>Broadcast:</label>
+                            <input type="text" id="ex1_broadcast" class="input-field">
+                        </div>
+                        <div class="exercise-field">
+                            <label>Nb Hôtes:</label>
+                            <input type="text" id="ex1_hotes" class="input-field" placeholder="ex: 254">
+                        </div>
+                        
+                        <button class="btn" onclick="checkExercise(1)">VERIFY_DATA</button>
+                        <div id="feedback_ex1"></div>
+                    </div>
+
+                    <div class="example-box" id="ex2">
+                        <h3>EX_02 : Subnetting /26</h3>
+                        <p>IP: <span class="highlight">192.168.100.75</span> / Masque: <span class="highlight">255.255.255.192</span></p>
+                        <p class="info-box" style="font-size:0.8rem">Hint: Pas de 64 (0, 64, 128...)</p>
+                        
+                        <div class="exercise-field">
+                            <label>Réseau:</label>
+                            <input type="text" id="ex2_reseau" class="input-field">
+                        </div>
+                        <div class="exercise-field">
+                            <label>Premier Hôte:</label>
+                            <input type="text" id="ex2_premier" class="input-field">
+                        </div>
+                        <div class="exercise-field">
+                            <label>Nb Hôtes:</label>
+                            <input type="text" id="ex2_hotes" class="input-field">
+                        </div>
+                        
+                        <button class="btn" onclick="checkExercise(2)">VERIFY_DATA</button>
+                        <div id="feedback_ex2"></div>
+                    </div>
+                `
+            }
+        };
+
+        // Données corrections Exercices
+        const exercises = {
+            1: {
+                answers: { reseau: '192.168.50.0', broadcast: '192.168.50.255', hotes: '254' },
+                explanation: "Classe C standard (/24). Le dernier octet est pour l'hôte."
+            },
+            2: {
+                answers: { reseau: '192.168.100.64', premier: '192.168.100.65', hotes: '62' },
+                explanation: "Subnetting /26. Pas de 64. 75 est entre 64 et 128. Réseau = .64"
+            }
+        };
+
+        // --- FONCTIONS ---
+
+        function showMenu() {
+            history.push(currentView);
+            currentView = 'menu';
+            updateBackButton();
+            
+            document.getElementById('content').innerHTML = `
+                <div class="menu-grid">
+                    <div class="menu-card" onclick="showLesson('intro')">
+                        <h3>01_INTRO</h3>
+                        <p>Concepts de base</p>
+                    </div>
+                    <div class="menu-card" onclick="showLesson('structure')">
+                        <h3>02_STRUCTURE</h3>
+                        <p>NetID vs HostID</p>
+                    </div>
+                    <div class="menu-card" onclick="showLesson('special')">
+                        <h3>03_SPECIAL_IP</h3>
+                        <p>Loopback, Broadcast</p>
+                    </div>
+                    <div class="menu-card" onclick="showLesson('classes')">
+                        <h3>04_CLASSES</h3>
+                        <p>A, B, C Ranges</p>
+                    </div>
+                    <div class="menu-card" onclick="showLesson('private')">
+                        <h3>05_PRIVATE_LAN</h3>
+                        <p>Réseaux domestiques</p>
+                    </div>
+                    <div class="menu-card" onclick="showLesson('netmask')">
+                        <h3>06_NETMASKS</h3>
+                        <p>Logique binaire</p>
+                    </div>
+                    <div class="menu-card" onclick="showLesson('subnetting')">
+                        <h3>07_SUBNETTING</h3>
+                        <p>Segmentation réseau</p>
+                    </div>
+                    <div class="menu-card" onclick="showLesson('quiz1')" style="border-left-color: var(--neon-green)">
+                        <h3>08_QUIZ_BASIC</h3>
+                        <p>Testez vos connaissances</p>
+                    </div>
+                    <div class="menu-card" onclick="showLesson('interactive')" style="border-left-color: var(--neon-red)">
+                        <h3>09_LAB_EXERCISES</h3>
+                        <p>Calculs pratiques</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function showLesson(lessonId) {
+            history.push(currentView);
+            currentView = lessonId;
+            updateBackButton();
+            const lesson = lessons[lessonId];
+            document.getElementById('content').innerHTML = lesson.content;
+        }
+
+        function goBack() {
+            if (history.length > 0) {
+                const previousView = history.pop();
+                currentView = previousView;
+                updateBackButton();
+                if (previousView === 'menu') showMenu();
+                else showLesson(previousView);
+            }
+        }
+
+        function updateBackButton() {
+            document.getElementById('backBtn').disabled = (history.length === 0);
+        }
+
+        function checkAnswer(element, isCorrect) {
+            // Désactive les autres options
+            const siblings = element.parentElement.querySelectorAll('.quiz-option');
+            siblings.forEach(el => el.style.pointerEvents = 'none');
+
+            const feedback = element.parentElement.querySelector('.quiz-feedback');
+            
+            if (isCorrect) {
+                element.classList.add('correct');
+                feedback.innerHTML = "ACCESS GRANTED [Correct]";
+                feedback.className = "quiz-feedback correct";
+            } else {
+                element.classList.add('incorrect');
+                feedback.innerHTML = "ACCESS DENIED [Incorrect]";
+                feedback.className = "quiz-feedback incorrect";
+            }
+        }
+
+        function checkExercise(num) {
+            const ex = exercises[num];
+            // Récupère les inputs
+            // Note: pour simplifier dans le JS unifié, je ne prends que les champs présents
+            let inputs = {};
+            let isCorrect = true;
+
+            for (const key in ex.answers) {
+                const el = document.getElementById(`ex${num}_${key}`);
+                if(el) {
+                    inputs[key] = el.value.trim();
+                    if(inputs[key] !== ex.answers[key]) isCorrect = false;
+                }
+            }
+
+            const feedbackEl = document.getElementById(`feedback_ex${num}`);
+            if(isCorrect) {
+                feedbackEl.innerHTML = `<div class="info-box" style="margin-top:10px; border-color:var(--neon-green)">SUCCESS: Données valides.</div>`;
+            } else {
+                feedbackEl.innerHTML = `<div class="warning-box" style="margin-top:10px">ERROR: Données incorrectes.<br><small>${ex.explanation}</small></div>`;
+            }
+        }
+
+        // Init
+        showMenu();
+
+    </script>
+<style>
+    /* L'écran noir qui recouvre tout au début */
+    #page-transition-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background-color: #050505; /* Noir profond du thème */
+        z-index: 99999; /* Au-dessus de tout */
+        opacity: 1;
+        transition: opacity 0.4s ease-in-out; /* Durée de la transition */
+        pointer-events: none; /* Permet de cliquer si jamais ça bug */
+    }
+    
+    /* Classe ajoutée en JS pour rendre transparent */
+    #page-transition-overlay.hidden {
+        opacity: 0;
+    }
+</style>
+
+<div id="page-transition-overlay"></div>
+
+<script>
+    // 1. TRANSITION D'ENTRÉE (FADE IN)
+    window.addEventListener('load', () => {
+        const overlay = document.getElementById('page-transition-overlay');
+        if(overlay) {
+            // Petit délai pour être sûr que le navigateur a affiché le fond noir
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+            }, 50);
+        }
+    });
+
+    // 2. TRANSITION DE SORTIE (FADE OUT)
+    document.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', function(e) {
+            const target = this.getAttribute('href');
+            
+            // On n'anime que les liens internes réels (pas les #, pas les liens externes)
+            if (target && target !== '#' && !target.startsWith('javascript') && this.target !== '_blank') {
+                e.preventDefault(); // Bloque le changement de page immédiat
+                
+                const overlay = document.getElementById('page-transition-overlay');
+                if(overlay) {
+                    overlay.classList.remove('hidden'); // Remet le noir
+                    
+                    // Attend la fin de l'animation (0.4s) avant de changer de page
+                    setTimeout(() => {
+                        window.location.href = target;
+                    }, 400); 
+                } else {
+                    window.location.href = target; // Sécurité si l'overlay n'existe pas
+                }
+            }
+        });
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>BinarySuite - Ultimate</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Fira+Code:wght@400;600&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌩️</text></svg>">
+
+    <style>
+        /* --- CSS GLOBAL & RESET --- */
+        * { box-sizing: border-box; }
+        body { margin: 0; padding: 0; overflow-x: hidden; }
+
+        /* --- BOUTON SWITCH MODE --- */
+        #mode-switcher {
+            position: fixed; top: 10px; right: 10px; z-index: 900;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed); color: white;
+            border: none; padding: 8px 15px; border-radius: 20px;
+            font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 11px;
+            cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: transform 0.2s;
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        #mode-switcher:hover { transform: scale(1.05); }
+
+        /* ============================================================
+           STYLES CALCULATRICE STYLE NUMWORKS (OVERLAY)
+           ============================================================ */
+        #calc-trigger-btn {
+            position: fixed; bottom: 80px; right: 20px;
+            width: 60px; height: 60px; border-radius: 50%;
+            background: #fbbf24; color: black; border: 2px solid #fff;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            z-index: 2000; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            font-size: 24px; transition: transform 0.2s;
+        }
+        #calc-trigger-btn:hover { transform: scale(1.1); background: #f59e0b; }
+        
+        #global-calc-panel {
+            position: fixed; top: 0; right: -100%;
+            width: 100%; height: 100vh;
+            background: #e5e5e5; z-index: 2001;
+            box-shadow: -5px 0 25px rgba(0,0,0,0.2);
+            transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex; flex-direction: column; font-family: 'Fira Code', monospace;
+        }
+        #global-calc-panel.open { right: 0; }
+
+        .nw-header {
+            background: #ffb100; color: white; padding: 10px 15px;
+            display: flex; justify-content: space-between; align-items: center;
+            font-weight: bold; font-family: sans-serif; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .nw-close { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; }
+
+        .nw-screen {
+            flex-grow: 1; background: white; padding: 15px;
+            overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
+            box-shadow: inset 0 -2px 5px rgba(0,0,0,0.05);
+        }
+        .nw-item {
+            display: flex; flex-direction: column; align-items: flex-end;
+            padding: 8px 0; border-bottom: 1px dashed #eee; animation: fadeIn 0.2s;
+        }
+        .nw-expr { font-size: 0.9rem; color: #333; margin-bottom: 2px; }
+        .nw-res { font-size: 1.4rem; font-weight: bold; color: #000; }
+
+        .nw-current-line {
+            margin-top: auto; text-align: right; min-height: 40px;
+            font-size: 1.5rem; color: #000; padding-top: 10px;
+            border-top: 2px solid #ffb100;
+        }
+        .cursor { display: inline-block; width: 2px; height: 1.2rem; background: #000; animation: blink 1s infinite; vertical-align: middle; }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        .nw-keyboard {
+            background: #f3f3f3; padding: 10px; padding-bottom: max(20px, env(safe-area-inset-bottom));
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+            border-top: 1px solid #ddd;
+        }
+        .nw-key {
+            background: white; border: 1px solid #ccc; border-radius: 6px;
+            height: 50px; font-size: 1.1rem; font-family: sans-serif; font-weight: 600;
+            color: #333; cursor: pointer; box-shadow: 0 2px 0 #bbb;
+            transition: transform 0.1s, box-shadow 0.1s;
+            display: flex; align-items: center; justify-content: center;
+            user-select: none;
+        }
+        .nw-key:active { transform: translateY(2px); box-shadow: none; }
+        
+        .k-dark { background: #4a4a4a; color: white; border-color: #333; box-shadow: 0 2px 0 #222; }
+        .k-gray { background: #d1d5db; color: black; border-color: #9ca3af; box-shadow: 0 2px 0 #9ca3af; }
+        .k-yellow { background: #ffb100; color: white; border-color: #d97706; box-shadow: 0 2px 0 #d97706; }
+        
+        @media (min-width: 768px) {
+            #calc-trigger-btn { bottom: 30px; right: 30px; }
+            #global-calc-panel { width: 360px; border-left: 1px solid #ccc; }
+        }
+
+        /* ============================================================
+           STYLES TABLEAU BIT-PAR-BIT (Mode Expert)
+           ============================================================ */
+        .binary-grid-container {
+            background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px;
+            padding: 20px; margin: 20px auto; max-width: 600px; font-family: 'Fira Code', monospace;
+        }
+        .bit-grid {
+            display: grid; grid-template-columns: 40px repeat(8, 1fr); gap: 8px;
+            align-items: center; margin-bottom: 20px;
+        }
+        .bit-cell {
+            background: #e2e8f0; color: #475569; padding: 10px 0; text-align: center;
+            border-radius: 6px; font-weight: bold; font-size: 1.1rem;
+        }
+        .bit-input {
+            width: 100%; padding: 10px 0; text-align: center;
+            border: 2px solid #cbd5e1; border-radius: 6px;
+            font-family: 'Fira Code', monospace; font-size: 1.2rem; font-weight: bold;
+            color: #2563eb; background: white; transition: all 0.2s;
+        }
+        .bit-input:focus { border-color: #4f46e5; outline: none; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2); }
+        .row-label { font-weight: bold; color: #64748b; text-align: right; padding-right: 10px; }
+        .grid-divider { grid-column: 1 / -1; height: 2px; background: #cbd5e1; margin: 5px 0; }
+        .vcn-container { display: flex; justify-content: center; gap: 20px; margin-top: 15px; padding-top: 15px; border-top: 1px dashed #cbd5e1; }
+        .vcn-box { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        .vcn-label { font-weight: bold; font-size: 0.9rem; }
+        .vcn-input { width: 50px; height: 50px; text-align: center; font-size: 1.2rem; border: 2px solid #cbd5e1; border-radius: 8px; font-family: 'Fira Code', monospace; }
+        .bit-header { font-size: 0.7rem; color: #94a3b8; text-align: center; margin-bottom: -5px; }
+
+        /* LISTE D'ERREURS DÉTAILLÉE */
+        .error-list { list-style: none; padding: 0; margin: 0; text-align: left; font-size: 0.9rem; }
+        .error-list li { margin-bottom: 5px; padding-left: 20px; position: relative; color: #b91c1c; }
+        .error-list li::before { content: "✖"; position: absolute; left: 0; font-weight: bold; }
+        #mobile-view .error-list li { color: #ef4444; }
+
+        /* Styles spécifiques pour le mobile expert */
+        #mobile-view .binary-grid-container {
+            overflow-x: auto; /* Permet le scroll horizontal si trop petit */
+            padding: 10px;
+            background: #2c2c2e; /* Fond sombre pour mobile */
+            border-color: #38383a;
+        }
+        #mobile-view .bit-grid {
+            min-width: 320px; /* Force une largeur min pour ne pas écraser */
+        }
+        #mobile-view .bit-cell { background: #3a3a3c; color: #cbd5e1; }
+        #mobile-view .bit-input { background: #1c1c1e; color: #a5b4fc; border-color: #4b5563; }
+        #mobile-view .row-label { color: #94a3b8; }
+        #mobile-view .vcn-input { background: #1c1c1e; color: white; border-color: #4b5563; }
+
+        @media (max-width: 480px) {
+            .bit-grid { gap: 4px; }
+            .bit-cell, .bit-input { font-size: 0.9rem; padding: 5px 0; }
+            .binary-grid-container { padding: 10px; }
+        }
+
+        /* ============================================================
+           STYLES ORIGINAUX (Mobile & Desktop Views)
+           ============================================================ */
+        #mobile-view {
+            --m-bg: #000000; --m-card: #1c1c1e; --m-text: #ffffff;
+            --m-accent: #4f46e5; --m-code: #2c2c2e; --m-success: #10b981; --m-error: #ef4444;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--m-bg); color: var(--m-text);
+            padding-bottom: 95px; min-height: 100vh; display: block;
+        }
+        #mobile-view .ios-header { 
+            position: sticky; top: 0; background: rgba(28, 28, 30, 0.95); backdrop-filter: blur(20px); 
+            border-bottom: 1px solid #38383a; padding: 15px; 
+            display: flex; align-items: center; justify-content: space-between;
+            z-index: 1000; 
+        }
+        #mobile-view .back-btn { color: var(--m-accent); text-decoration: none; font-size: 17px; display: flex; align-items: center; gap:5px; }
+        #mobile-view .tab-content { display: none; padding: 20px; animation: fadeIn 0.3s ease; }
+        #mobile-view .tab-content.active { display: block; }
+        #mobile-view .ios-card { background: var(--m-card); border-radius: 12px; padding: 16px; margin-bottom: 20px; }
+        #mobile-view h2 { color: var(--m-accent); font-size: 1.3rem; margin-bottom: 15px; }
+        #mobile-view p { color: #d1d1d6; line-height: 1.5; font-size: 0.95rem; }
+        #mobile-view .bit-box { font-family: 'Fira Code', monospace; background: var(--m-code); padding: 10px; border-radius: 8px; text-align: center; font-size: 1.5rem; letter-spacing: 2px; margin: 15px 0; color: #a5b4fc; }
+        #mobile-view input { background: #2c2c2e; border: none; border-radius: 8px; color: white; padding: 12px; width: 100%; font-family: 'Fira Code', monospace; margin-bottom: 10px; text-align: center; font-size: 1.2rem; }
+        #mobile-view button.ios-btn { background: var(--m-accent); color: white; border: none; border-radius: 10px; padding: 12px; width: 100%; font-weight: 600; margin-top: 10px; cursor: pointer; }
+        #mobile-view .feedback { margin-top: 15px; padding: 12px; border-radius: 8px; display: none; text-align: center; }
+        #mobile-view .feedback.success { background: rgba(16, 185, 129, 0.2); color: var(--m-success); border: 1px solid var(--m-success); }
+        #mobile-view .feedback.error { background: rgba(239, 68, 68, 0.2); color: var(--m-error); border: 1px solid var(--m-error); }
+        #mobile-view .tab-bar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(28, 28, 30, 0.90); backdrop-filter: blur(20px); border-top: 1px solid #38383a; display: flex; justify-content: space-around; padding-bottom: env(safe-area-inset-bottom); z-index: 1000; }
+        #mobile-view .tab-item { flex: 1; padding: 10px 0; text-align: center; color: #8e8e93; background: none; border: none; font-size: 10px; cursor: pointer; }
+        #mobile-view .tab-item.active { color: var(--m-accent); }
+        #mobile-view .tab-icon { font-size: 20px; display: block; margin-bottom: 4px; }
+
+        /* DESKTOP */
+        #desktop-view {
+            --d-primary: #4f46e5; --d-primary-dark: #4338ca; --d-secondary: #64748b;
+            --d-accent: #3498db; --d-bg-body: #f1f5f9; --d-bg-card: #ffffff;
+            --d-text-main: #1e293b; --d-text-light: #64748b; --d-success: #10b981;
+            --d-danger: #ef4444; --d-warning: #f59e0b; --d-warning-bg: #fffbeb;
+            --d-sidebar-width: 280px; --d-radius: 12px;
+            font-family: 'Inter', sans-serif; background-color: var(--d-bg-body); color: var(--d-text-main);
+            display: none; min-height: 100vh;
+        }
+        #desktop-view .sidebar { width: var(--d-sidebar-width); background: #1e1b4b; color: white; position: fixed; height: 100vh; left: 0; top: 0; padding: 20px; display: flex; flex-direction: column; z-index: 100; transition: transform 0.3s ease; overflow-y: auto; }
+        #desktop-view .brand { font-size: 1.4rem; font-weight: 700; margin-bottom: 30px; display: flex; align-items: center; gap: 10px; color: #818cf8; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; }
+        #desktop-view .nav-category { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin: 20px 0 10px 10px; font-weight: 700; }
+        #desktop-view .nav-links { list-style: none; flex-grow: 1; padding: 0; }
+        #desktop-view .nav-item { margin-bottom: 5px; }
+        #desktop-view .nav-btn { width: 100%; text-align: left; padding: 10px 15px; background: transparent; border: none; color: #cbd5e1; cursor: pointer; border-radius: 8px; font-size: 0.9rem; font-weight: 500; transition: all 0.2s; display: flex; align-items: center; gap: 12px; }
+        #desktop-view .nav-btn:hover { background: rgba(255,255,255,0.05); color: white; }
+        #desktop-view .nav-btn.active { background: var(--d-primary); color: white; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); }
+        #desktop-view .main-content { margin-left: var(--d-sidebar-width); flex-grow: 1; padding: 40px; width: calc(100% - var(--d-sidebar-width)); }
+        #desktop-view .section { display: none; animation: fadeIn 0.4s ease; max-width: 1000px; margin: 0 auto; }
+        #desktop-view .section.active { display: block; }
+        #desktop-view h1 { font-size: 2rem; margin-bottom: 10px; color: var(--d-text-main); }
+        #desktop-view h2 { font-size: 1.5rem; margin: 30px 0 20px; color: var(--d-primary-dark); }
+        #desktop-view h3 { font-size: 1.2rem; margin: 20px 0 10px; color: var(--d-text-main); font-weight: 600; }
+        #desktop-view p { line-height: 1.7; color: var(--d-text-light); margin-bottom: 15px; }
+        #desktop-view .card { background: var(--d-bg-card); border-radius: var(--d-radius); padding: 25px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); margin-bottom: 25px; border: 1px solid #e2e8f0; }
+        #desktop-view .card-expert { border-left: 5px solid var(--d-accent); }
+        #desktop-view .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        #desktop-view .concept-box { background: #eef2ff; border-left: 4px solid var(--d-primary); padding: 20px; border-radius: 0 var(--d-radius) var(--d-radius) 0; margin: 20px 0; }
+        #desktop-view .binary-code { font-family: 'Fira Code', monospace; background: #1e293b; color: #a5b4fc; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+        #desktop-view input[type="number"], #desktop-view input[type="text"] { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-family: 'Fira Code', monospace; font-size: 1rem; transition: border-color 0.2s; margin-bottom: 10px; }
+        #desktop-view input:focus { outline: none; border-color: var(--d-primary); }
+        #desktop-view .btn { padding: 12px 24px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.95rem; }
+        #desktop-view .btn-primary { background: var(--d-primary); color: white; }
+        #desktop-view .btn-primary:hover { background: var(--d-primary-dark); transform: translateY(-1px); }
+        #desktop-view .btn-accent { background: var(--d-accent); color: white; }
+        #desktop-view .btn-success { background: var(--d-success); color: white; }
+        #desktop-view .btn-outline { background: transparent; border: 2px solid #cbd5e1; color: var(--d-secondary); }
+        #desktop-view .btn-outline:hover { border-color: var(--d-primary); color: var(--d-primary); }
+        #desktop-view .btn-text { background: transparent; color: var(--d-secondary); text-decoration: underline; font-size: 0.9rem; }
+        #desktop-view .training-card, #desktop-view .exercise-box { text-align: center; padding: 40px; background: white; border-radius: 20px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); }
+        #desktop-view .problem-display, #desktop-view .bit-display { font-size: 2.5rem; font-weight: 700; color: var(--d-text-main); margin: 20px 0; font-family: 'Fira Code', monospace; }
+        #desktop-view #ac_feedback { margin-top: 20px; padding: 15px; border-radius: 5px; text-align: left; display: none; background: #fff; border: 1px solid #eee; }
+        #desktop-view .feedback-correct { background-color: #d4edda !important; color: #155724; border: 1px solid #c3e6cb !important; padding: 10px; border-radius: 4px;}
+        #desktop-view .feedback-wrong { background-color: #f8d7da !important; color: #721c24; border: 1px solid #f5c6cb !important; padding: 10px; border-radius: 4px;}
+        #desktop-view .explanation-step { margin-top: 15px; padding-left: 15px; border-left: 4px solid #ccc; font-family: 'Segoe UI', sans-serif; font-size: 0.95rem; line-height: 1.6; }
+        #desktop-view .expert-tabs { display: flex; background: white; padding: 5px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e2e8f0; }
+        #desktop-view .expert-tab { flex: 1; text-align: center; padding: 10px; cursor: pointer; border-radius: 6px; font-weight: 600; color: var(--d-secondary); }
+        #desktop-view .expert-tab.active { background: var(--d-accent); color: white; }
+        #desktop-view .expert-sub-section { display: none; }
+        #desktop-view .expert-sub-section.active { display: block; animation: fadeIn 0.3s; }
+        #desktop-view .mobile-toggle { display: none; position: fixed; top: 15px; right: 15px; z-index: 200; background: var(--d-primary); color: white; padding: 10px; border-radius: 8px; border: none; }
+        @media (max-width: 768px) {
+            #desktop-view .sidebar { transform: translateX(-100%); width: 280px; }
+            #desktop-view .sidebar.open { transform: translateX(0); box-shadow: 10px 0 30px rgba(0,0,0,0.5); }
+            #desktop-view .main-content { margin-left: 0; width: 100%; padding: 20px; padding-top: 70px; }
+            #desktop-view .mobile-toggle { display: block; }
+            #desktop-view .grid-2 { grid-template-columns: 1fr; }
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <button id="mode-switcher" onclick="toggleMode()">💻 Passer en mode Ordi</button>
+
+    <button id="calc-trigger-btn" onclick="toggleGlobalCalc()" title="Ouvrir la calculatrice">
+        <i class="fas fa-calculator"></i>
+    </button>
+
+    <div id="global-calc-panel">
+        <div class="nw-header">
+            <span>NumWorks</span>
+            <button class="nw-close" onclick="toggleGlobalCalc()"><i class="fas fa-times"></i></button>
+        </div>
+        
+        <div class="nw-screen" id="nw-screen">
+            <div style="text-align:center; color:#999; margin-top:50px;" id="nw-placeholder">
+                Historique vide
+            </div>
+            <div class="nw-current-line">
+                <span id="nw-input"></span><span class="cursor"></span>
+            </div>
+        </div>
+
+        <div class="nw-keyboard">
+            <button class="nw-key k-dark" onclick="nwKey('(')">(</button>
+            <button class="nw-key k-dark" onclick="nwKey(')')">)</button>
+            <button class="nw-key k-dark" onclick="nwKey('**')">^</button>
+            <button class="nw-key k-dark" onclick="nwClear()" style="background:#ef4444; border-color:#b91c1c;">AC</button>
+            
+            <button class="nw-key" onclick="nwKey('7')">7</button>
+            <button class="nw-key" onclick="nwKey('8')">8</button>
+            <button class="nw-key" onclick="nwKey('9')">9</button>
+            <button class="nw-key k-gray" onclick="nwKey('/')">÷</button>
+            
+            <button class="nw-key" onclick="nwKey('4')">4</button>
+            <button class="nw-key" onclick="nwKey('5')">5</button>
+            <button class="nw-key" onclick="nwKey('6')">6</button>
+            <button class="nw-key k-gray" onclick="nwKey('*')">×</button>
+            
+            <button class="nw-key" onclick="nwKey('1')">1</button>
+            <button class="nw-key" onclick="nwKey('2')">2</button>
+            <button class="nw-key" onclick="nwKey('3')">3</button>
+            <button class="nw-key k-gray" onclick="nwKey('-')">-</button>
+            
+            <button class="nw-key" onclick="nwKey('0')">0</button>
+            <button class="nw-key" onclick="nwKey('.')">.</button>
+            <button class="nw-key k-dark" onclick="nwBack()"><i class="fas fa-backspace"></i></button>
+            <button class="nw-key k-gray" onclick="nwKey('+')">+</button>
+
+            <button class="nw-key k-yellow" style="grid-column: span 4; font-weight:800;" onclick="nwCalc()">EXE</button>
+        </div>
+    </div>
+
+
+    <div id="mobile-view">
+        <header class="ios-header">
+            <a href="I-Autres.html" class="back-btn">
+                <i class="fas fa-chevron-left"></i> Retour
+            </a>
+            <div style="font-weight:600; font-size:1.1rem;">Binaire Mobile</div>
+            <button onclick="toggleMode()" style="background:none; border:none; color:#4f46e5; font-size:1.2rem; cursor:pointer;" title="Mode Ordinateur">
+                <i class="fas fa-desktop"></i>
+            </button>
+        </header>
+
+        <div id="m-tab-cours" class="tab-content active">
+            <div class="ios-card">
+                <h2>Le Binaire (Base 2)</h2>
+                <p>Les ordinateurs n'utilisent que <strong>0</strong> et <strong>1</strong>.</p>
+                <div class="bit-box">1010 = 10</div>
+                <p><strong>Poids :</strong> 128 | 64 | 32 | 16 | 8 | 4 | 2 | 1</p>
+            </div>
+            <div class="ios-card">
+                <h2>Le Signe (C2)</h2>
+                <p>Pour les négatifs, on utilise le <strong>Complément à 2</strong>.</p>
+                <ol style="margin-left:20px; color:#aaa;">
+                    <li>Inverser les bits (0→1, 1→0)</li>
+                    <li>Ajouter 1 au résultat</li>
+                </ol>
+            </div>
+        </div>
+
+        <div id="m-tab-train" class="tab-content">
+            <div class="ios-card">
+                <h2>Décimal → Binaire</h2>
+                <p>Convertissez ce nombre (8 bits) :</p>
+                <div class="bit-box" id="m-quest-val">...</div>
+                <input type="text" id="m-input-val" placeholder="Ex: 00101010">
+                <button class="ios-btn" onclick="checkMobileTraining()">Vérifier</button>
+                <div id="m-feedback" class="feedback"></div>
+                <button class="ios-btn" style="background:#333; margin-top:10px;" onclick="initMobileTraining()">Suivant</button>
+            </div>
+        </div>
+        
+        <div id="m-tab-tools" class="tab-content">
+            <div class="ios-card">
+                <h2>Convertisseur</h2>
+                <p>Décimal vers Binaire (Non signé)</p>
+                <input type="number" id="m-tool-input" placeholder="Nombre (ex: 42)">
+                <button class="ios-btn" onclick="mobileConvert()">Convertir</button>
+                <div class="bit-box" id="m-tool-res" style="margin-top:20px; font-size:1.2rem;">...</div>
+            </div>
+        </div>
+
+        <div id="m-tab-expert" class="tab-content">
+            <div class="ios-card" style="border-left: 4px solid #f59e0b;">
+                <h2>CPU 8-bits & Flags</h2>
+                <p style="font-size:0.8rem;">Remplissez bit par bit. Faites défiler horizontalement si nécessaire.</p>
+                
+                <div class="binary-grid-container">
+                    <div class="bit-grid">
+                        <div></div>
+                        <div class="bit-header">7</div><div class="bit-header">6</div><div class="bit-header">5</div><div class="bit-header">4</div>
+                        <div class="bit-header">3</div><div class="bit-header">2</div><div class="bit-header">1</div><div class="bit-header">0</div>
+
+                        <div class="row-label">A</div>
+                        <div id="m-a-7" class="bit-cell">0</div><div id="m-a-6" class="bit-cell">0</div><div id="m-a-5" class="bit-cell">0</div><div id="m-a-4" class="bit-cell">0</div>
+                        <div id="m-a-3" class="bit-cell">0</div><div id="m-a-2" class="bit-cell">0</div><div id="m-a-1" class="bit-cell">0</div><div id="m-a-0" class="bit-cell">0</div>
+
+                        <div class="row-label">+ B</div>
+                        <div id="m-b-7" class="bit-cell">0</div><div id="m-b-6" class="bit-cell">0</div><div id="m-b-5" class="bit-cell">0</div><div id="m-b-4" class="bit-cell">0</div>
+                        <div id="m-b-3" class="bit-cell">0</div><div id="m-b-2" class="bit-cell">0</div><div id="m-b-1" class="bit-cell">0</div><div id="m-b-0" class="bit-cell">0</div>
+
+                        <div class="grid-divider"></div>
+
+                        <div class="row-label">=</div>
+                        <input type="text" id="m-res-7" class="bit-input" maxlength="1" oninput="focusNext(this, 'm-res-6')">
+                        <input type="text" id="m-res-6" class="bit-input" maxlength="1" oninput="focusNext(this, 'm-res-5')">
+                        <input type="text" id="m-res-5" class="bit-input" maxlength="1" oninput="focusNext(this, 'm-res-4')">
+                        <input type="text" id="m-res-4" class="bit-input" maxlength="1" oninput="focusNext(this, 'm-res-3')">
+                        <input type="text" id="m-res-3" class="bit-input" maxlength="1" oninput="focusNext(this, 'm-res-2')">
+                        <input type="text" id="m-res-2" class="bit-input" maxlength="1" oninput="focusNext(this, 'm-res-1')">
+                        <input type="text" id="m-res-1" class="bit-input" maxlength="1" oninput="focusNext(this, 'm-res-0')">
+                        <input type="text" id="m-res-0" class="bit-input" maxlength="1" oninput="focusNext(this, 'm-val-v')">
+                    </div>
+
+                    <div class="vcn-container">
+                        <div class="vcn-box">
+                            <span class="vcn-label" style="color:#d97706;">V</span>
+                            <input type="text" id="m-val-v" class="vcn-input" maxlength="1" placeholder="?" oninput="focusNext(this, 'm-val-c')">
+                        </div>
+                        <div class="vcn-box">
+                            <span class="vcn-label" style="color:#2563eb;">C</span>
+                            <input type="text" id="m-val-c" class="vcn-input" maxlength="1" placeholder="?" oninput="focusNext(this, 'm-val-n')">
+                        </div>
+                        <div class="vcn-box">
+                            <span class="vcn-label" style="color:#dc2626;">N</span>
+                            <input type="text" id="m-val-n" class="vcn-input" maxlength="1" placeholder="?">
+                        </div>
+                    </div>
+                </div>
+
+                <button class="ios-btn" onclick="checkMobileExpertGrid()">Vérifier</button>
+                <div id="m-ac-feedback" class="feedback"></div>
+                <button class="ios-btn" style="background:#333; margin-top:10px;" onclick="initMobileExpertGrid()">Question Suivante</button>
+            </div>
+        </div>
+
+        <nav class="tab-bar">
+            <button class="tab-item active" onclick="switchMobileTab('m-tab-cours', this)">
+                <span class="tab-icon"><i class="fas fa-book"></i></span> Cours
+            </button>
+            <button class="tab-item" onclick="switchMobileTab('m-tab-train', this)">
+                <span class="tab-icon"><i class="fas fa-gamepad"></i></span> Jeu
+            </button>
+            <button class="tab-item" onclick="switchMobileTab('m-tab-tools', this)">
+                <span class="tab-icon"><i class="fas fa-exchange-alt"></i></span> Outils
+            </button>
+            <button class="tab-item" onclick="switchMobileTab('m-tab-expert', this); initMobileExpertGrid();">
+                <span class="tab-icon"><i class="fas fa-microchip"></i></span> CPU
+            </button>
+        </nav>
+    </div>
+
+
+    <div id="desktop-view">
+        <button class="mobile-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+
+        <nav class="sidebar" id="sidebar">
+            <div class="brand">
+                <i class="fas fa-layer-group"></i>&nbsp; BinarySuite
+            </div>
+            <a href="I-Autres.html" class="nav-btn" style="color: #93c5fd; margin-bottom: 20px;">
+                <i class="fas fa-arrow-left"></i> Retour Menu
+            </a>
+            
+            <div class="nav-category">🎓 Parcours Découverte</div>
+            <ul class="nav-links">
+                <li class="nav-item">
+                    <button class="nav-btn active" onclick="showSection('intro', this)">
+                        <i class="fas fa-book-open"></i> Introduction
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-btn" onclick="showSection('formats', this)">
+                        <i class="fas fa-microchip"></i> Formats & Signes
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-btn" onclick="showSection('operations', this)">
+                        <i class="fas fa-calculator"></i> Opérations (+/-)
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-btn" onclick="showSection('training', this)" style="color: #6ee7b7;">
+                        <i class="fas fa-gamepad"></i> Entraînement Ludique
+                    </button>
+                </li>
+            </ul>
+
+            <div class="nav-category">🛠️ Outils Avancés</div>
+            <ul class="nav-links">
+                <li class="nav-item">
+                    <button class="nav-btn" onclick="showSection('academic', this)" style="color: #93c5fd;">
+                        <i class="fas fa-university"></i> Mode Expert (Bit-à-Bit)
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-btn" onclick="showSection('converter', this)">
+                        <i class="fas fa-exchange-alt"></i> Convertisseur Rapide
+                    </button>
+                </li>
+            </ul>
+        </nav>
+
+        <main class="main-content">
+            <div id="intro" class="section active">
+                <h1>Arithmétique Binaire</h1>
+                <p class="lead">Comprendre comment les ordinateurs comptent et calculent.</p>
+                <div class="card">
+                    <h2>Pourquoi le binaire ?</h2>
+                    <p>En électronique numérique, un transistor n'a que deux états stables : <strong>bloqué</strong> (pas de courant) ou <strong>saturé</strong> (courant passe). C'est pour cela que l'informatique utilise la base 2.</p>
+                    <div class="concept-box"><i class="fas fa-lightbulb" style="color: gold;"></i> <strong>Analogie :</strong> Imaginez une rangée d'interrupteurs. Chaque interrupteur est un <strong>bit</strong>.</div>
+                </div>
+                <div class="grid-2">
+                    <div class="card">
+                        <h3>Unités de mesure</h3>
+                        <ul>
+                            <li><strong>Bit (b)</strong> : 0 ou 1</li>
+                            <li><strong>Nibble</strong> : 4 bits (ex: <span class="binary-code">1010</span>)</li>
+                            <li><strong>Octet (Byte/B)</strong> : 8 bits</li>
+                            <li><strong>Mot (Word)</strong> : 16, 32 ou 64 bits</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <h3>Puissances de 2</h3>
+                        <p>À connaître par cœur pour convertir rapidement :</p>
+                        <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+                            <span class="binary-code">2⁰=1</span><span class="binary-code">2¹=2</span><span class="binary-code">2²=4</span>
+                            <span class="binary-code">2³=8</span><span class="binary-code">2⁴=16</span><span class="binary-code">2⁵=32</span>
+                            <span class="binary-code">2⁶=64</span><span class="binary-code">2⁷=128</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="triggerNav('formats')">Suivant : Formats & Signes <i class="fas fa-arrow-right"></i></button>
+            </div>
+
+            <div id="formats" class="section">
+                <h1>Formats & Nombres Signés</h1>
+                <div class="card">
+                    <h2>Entiers Naturels (Non signés)</h2>
+                    <p>Avec <strong>n</strong> bits, on peut coder de <strong>0</strong> à <strong>2ⁿ - 1</strong>.</p>
+                    <table><tr><th>Bits</th><th>Plage</th><th>Exemple (Max)</th></tr><tr><td>4 bits</td><td>0 à 15</td><td><span class="binary-code">1111</span> = 15</td></tr><tr><td>8 bits</td><td>0 à 255</td><td><span class="binary-code">11111111</span> = 255</td></tr></table>
+                </div>
+                <div class="card">
+                    <h2>Entiers Relatifs (Signés)</h2>
+                    <p>Pour représenter des nombres négatifs, on utilise la méthode du <strong>Complément à 2 (C2)</strong>.</p>
+                    <div class="concept-box">
+                        <h3>Recette pour trouver -X (ex: -5 sur 8 bits) :</h3>
+                        <ol style="margin-left: 20px;">
+                            <li>Écrire X en binaire : <span class="binary-code">0000 0101</span> (5)</li>
+                            <li>Inverser les bits (C1) : <span class="binary-code">1111 1010</span></li>
+                            <li>Ajouter 1 : <span class="binary-code">1111 1011</span> (-5)</li>
+                        </ol>
+                    </div>
+                    <p><strong>Note :</strong> Le bit le plus à gauche (MSB) indique le signe (0 = positif, 1 = négatif).</p>
+                </div>
+                <button class="btn btn-primary" onclick="triggerNav('operations')">Suivant : Opérations <i class="fas fa-arrow-right"></i></button>
+            </div>
+
+            <div id="operations" class="section">
+                <h1>Opérations Binaires</h1>
+                <div class="grid-2">
+                    <div class="card">
+                        <h3>➕ L'Addition</h3>
+                        <p>Les règles de base :</p>
+                        <ul style="list-style: none;"><li>0 + 0 = 0</li><li>0 + 1 = 1</li><li>1 + 0 = 1</li><li>1 + 1 = 0 (je retiens 1)</li><li>1 + 1 + 1 = 1 (je retiens 1)</li></ul>
+                    </div>
+                    <div class="card">
+                        <h3>➖ La Soustraction</h3>
+                        <p>En binaire, on ne soustrait pas. On additionne l'opposé.</p>
+                        <p><strong>A - B</strong> devient <strong>A + (-B)</strong></p>
+                        <p>Il faut donc convertir B en son complément à 2 avant d'additionner.</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>Exemple : 6 - 3 (sur 4 bits)</h3>
+                    <div class="binary-code" style="padding: 15px; display: block;">
+                        6  = 0110<br>-3 = 1101 (complément à 2 de 0011)<br>-----------<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0110<br>&nbsp;&nbsp;+ 1101<br>&nbsp;&nbsp;------<br>&nbsp;¹10011 -> On garde 4 bits : <strong>0011</strong> (3)
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="triggerNav('training')">Aller s'entraîner <i class="fas fa-dumbbell"></i></button>
+            </div>
+
+            <div id="training" class="section">
+                <h1 style="color: var(--d-primary);">🔥 Entraînement Ludique</h1>
+                <p>Mode "Infinite Training" : Générez des exercices aléatoires. L'aide apparaîtra après 3 erreurs.</p>
+                <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                    <button class="btn btn-outline" onclick="setTrainingMode('dec2bin')">Décimal → Binaire</button>
+                    <button class="btn btn-outline" onclick="setTrainingMode('bin2dec')">Binaire → Décimal</button>
+                    <button class="btn btn-outline" onclick="setTrainingMode('addition')">Addition</button>
+                    <button class="btn btn-outline" onclick="setTrainingMode('subtraction')">Soustraction (C2)</button>
+                </div>
+                <div class="training-card">
+                    <h3 id="train_title">Sélectionnez un mode ci-dessus</h3>
+                    <div id="train_content" style="display:none;">
+                        <div class="problem-display" id="train_question">---</div>
+                        <div style="max-width: 400px; margin: 0 auto;">
+                            <input type="text" id="train_answer" placeholder="Votre réponse..." style="text-align: center;">
+                            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                                <button class="btn btn-primary" style="flex: 2;" onclick="checkAnswer()">Vérifier</button>
+                                <button class="btn btn-outline" style="flex: 1;" onclick="showCorrection()">Voir correction</button>
+                            </div>
+                            <button class="btn btn-text" onclick="generateQuestion()" style="margin-top: 15px;">Passer / Nouvelle question</button>
+                        </div>
+                        <div id="train_hint" class="hint-box" style="margin-top: 15px; padding: 15px; background: var(--d-warning-bg); border: 1px solid var(--d-warning); border-radius: 8px; display:none; color: #92400e;">
+                            <i class="fas fa-life-ring"></i> <strong>Indice :</strong> <span id="hint_text"></span>
+                        </div>
+                        <div id="train_feedback" style="margin-top: 15px; padding: 15px; border-radius: 8px; display:none;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="academic" class="section">
+                <h1 style="color: var(--d-primary);">🏛️ Mode Expert / Académique</h1>
+                <p>Ce mode simule le fonctionnement interne d'un processeur 8 bits, incluant la gestion des erreurs via les drapeaux (Flags).</p>
+                <div class="expert-tabs">
+                    <div class="expert-tab active" onclick="ac_switchTab('ac-cours')">1. Rappels Théoriques (Flags)</div>
+                    <div class="expert-tab" onclick="ac_switchTab('ac-training')">2. Exercice Complet (VCN)</div>
+                </div>
+                <div id="ac-cours" class="expert-sub-section active">
+                    <div class="card card-expert"><h3>I. Formats et Entiers Naturels</h3><p>Un format de <b>n</b> bits permet de coder $2^n$ valeurs. Exemple sur 8 bits : de 0 à 255.</p></div>
+                    <div class="card card-expert"><h3>II. Entiers Relatifs & Complément à 2</h3><p>Le bit de poids fort indique le signe : <b>0 = Positif, 1 = Négatif</b>.</p></div>
+                    <div class="card card-expert">
+                        <h3>III. Indicateurs d'État (Flags)</h3>
+                        <p>Le CPU lève des drapeaux après un calcul :</p>
+                        <ul><li><b>N (Negative)</b> : 1 si le résultat est négatif (bit de poids fort à 1).</li><li><b>C (Carry/Retenue)</b> : 1 s'il y a une retenue sortante (dépassement capacité unsigned).</li><li><b>V (Overflow/Débordement)</b> : 1 si le résultat signé est incohérent (ex: Positif + Positif = Négatif).</li></ul>
+                    </div>
+                    <button class="btn btn-accent" onclick="ac_switchTab('ac-training')">Passer aux exercices</button>
+                </div>
+                
+                <div id="ac-training" class="expert-sub-section">
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <p style="font-size: 0.9em; color: #666;">Remplissez le résultat et les drapeaux (0 ou 1) case par case.</p>
+                    </div>
+
+                    <div class="exercise-box">
+                        <h2 id="ac-ex-title">Calculatrice CPU (8 bits)</h2>
+                        
+                        <div class="binary-grid-container">
+                            <div class="bit-grid" id="bit-grid-display">
+                                <div></div>
+                                <div class="bit-header">7</div><div class="bit-header">6</div><div class="bit-header">5</div><div class="bit-header">4</div>
+                                <div class="bit-header">3</div><div class="bit-header">2</div><div class="bit-header">1</div><div class="bit-header">0</div>
+
+                                <div class="row-label">A</div>
+                                <div id="a-7" class="bit-cell">0</div><div id="a-6" class="bit-cell">0</div><div id="a-5" class="bit-cell">0</div><div id="a-4" class="bit-cell">0</div>
+                                <div id="a-3" class="bit-cell">0</div><div id="a-2" class="bit-cell">0</div><div id="a-1" class="bit-cell">0</div><div id="a-0" class="bit-cell">0</div>
+
+                                <div class="row-label">+ B</div>
+                                <div id="b-7" class="bit-cell">0</div><div id="b-6" class="bit-cell">0</div><div id="b-5" class="bit-cell">0</div><div id="b-4" class="bit-cell">0</div>
+                                <div id="b-3" class="bit-cell">0</div><div id="b-2" class="bit-cell">0</div><div id="b-1" class="bit-cell">0</div><div id="b-0" class="bit-cell">0</div>
+
+                                <div class="grid-divider"></div>
+
+                                <div class="row-label">=</div>
+                                <input type="text" id="res-7" class="bit-input" maxlength="1" oninput="focusNext(this, 'res-6')">
+                                <input type="text" id="res-6" class="bit-input" maxlength="1" oninput="focusNext(this, 'res-5')">
+                                <input type="text" id="res-5" class="bit-input" maxlength="1" oninput="focusNext(this, 'res-4')">
+                                <input type="text" id="res-4" class="bit-input" maxlength="1" oninput="focusNext(this, 'res-3')">
+                                <input type="text" id="res-3" class="bit-input" maxlength="1" oninput="focusNext(this, 'res-2')">
+                                <input type="text" id="res-2" class="bit-input" maxlength="1" oninput="focusNext(this, 'res-1')">
+                                <input type="text" id="res-1" class="bit-input" maxlength="1" oninput="focusNext(this, 'res-0')">
+                                <input type="text" id="res-0" class="bit-input" maxlength="1" oninput="focusNext(this, 'val-v')">
+                            </div>
+
+                            <div class="vcn-container">
+                                <div class="vcn-box">
+                                    <span class="vcn-label" style="color:#d97706;">V (Overflow)</span>
+                                    <input type="text" id="val-v" class="vcn-input" maxlength="1" placeholder="?" oninput="focusNext(this, 'val-c')">
+                                </div>
+                                <div class="vcn-box">
+                                    <span class="vcn-label" style="color:#2563eb;">C (Carry)</span>
+                                    <input type="text" id="val-c" class="vcn-input" maxlength="1" placeholder="?" oninput="focusNext(this, 'val-n')">
+                                </div>
+                                <div class="vcn-box">
+                                    <span class="vcn-label" style="color:#dc2626;">N (Negative)</span>
+                                    <input type="text" id="val-n" class="vcn-input" maxlength="1" placeholder="?">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="text-align: center;">
+                            <button class="btn btn-success" onclick="ac_checkAnswer()">Vérifier (Bit à Bit)</button>
+                            <button class="btn btn-primary" onclick="ac_generateExercise()">Question Suivante</button>
+                        </div>
+                        
+                        <div id="ac_feedback"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="converter" class="section">
+                <h1>Outils de Conversion</h1>
+                <div class="grid-2">
+                    <div class="card">
+                        <h3>Décimal vers Binaire</h3>
+                        <input type="number" id="conv_dec_input" placeholder="Entrez un entier (ex: 42)">
+                        <div style="margin: 10px 0;"><label><input type="checkbox" id="conv_signed"> Mode signé (8 bits)</label></div>
+                        <button class="btn btn-primary" onclick="toolConvertDec()">Convertir</button>
+                        <div id="conv_dec_res" style="margin-top: 15px; font-weight: bold;"></div>
+                    </div>
+                    <div class="card">
+                        <h3>Binaire vers Décimal</h3>
+                        <input type="text" id="conv_bin_input" placeholder="Entrez des 0 et 1 (ex: 101010)">
+                        <div style="margin: 10px 0;"><label><input type="checkbox" id="conv_bin_signed"> Interpréter comme signé (C2)</label></div>
+                        <button class="btn btn-primary" onclick="toolConvertBin()">Convertir</button>
+                        <div id="conv_bin_res" style="margin-top: 15px; font-weight: bold;"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // --- LOGIQUE NAVIGATION ---
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+        function showSection(id, btnElement) {
+            document.querySelectorAll('#desktop-view .section').forEach(el => el.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            if(btnElement) {
+                document.querySelectorAll('#desktop-view .nav-btn').forEach(el => el.classList.remove('active'));
+                btnElement.classList.add('active');
+            }
+            if(window.innerWidth < 768) { document.getElementById('sidebar').classList.remove('open'); }
+        }
+        function triggerNav(targetId) {
+            const btn = Array.from(document.querySelectorAll('#desktop-view .nav-btn')).find(b => b.getAttribute('onclick').includes(targetId));
+            showSection(targetId, btn);
+            window.scrollTo(0,0);
+        }
+
+        // --- SWITCH MODE ---
+        let isMobile = true;
+        function toggleMode() {
+            isMobile = !isMobile;
+            const m = document.getElementById('mobile-view');
+            const d = document.getElementById('desktop-view');
+            const btn = document.getElementById('mode-switcher');
+            const b = document.body;
+
+            if (isMobile) {
+                m.style.display = 'block'; d.style.display = 'none';
+                btn.innerText = "💻 Passer en mode Ordi"; b.style.backgroundColor = "#000";
+            } else {
+                m.style.display = 'none'; d.style.display = 'block';
+                btn.innerText = "📱 Passer en mode Mobile"; b.style.backgroundColor = "#f1f5f9";
+            }
+        }
+
+        // --- MOBILE JS ---
+        function switchMobileTab(tabId, btn) {
+            document.querySelectorAll('#mobile-view .tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('#mobile-view .tab-item').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            btn.classList.add('active');
+            window.scrollTo(0,0);
+        }
+        let mTarget = 0;
+        function initMobileTraining() {
+            mTarget = Math.floor(Math.random() * 255);
+            document.getElementById('m-quest-val').innerText = mTarget;
+            document.getElementById('m-input-val').value = "";
+            document.getElementById('m-feedback').style.display = "none";
+        }
+        function checkMobileTraining() {
+            const u = document.getElementById('m-input-val').value;
+            const fb = document.getElementById('m-feedback');
+            const ans = mTarget.toString(2);
+            fb.style.display="block";
+            if (parseInt(u, 2) === mTarget) {
+                fb.innerText="✅ Correct !"; fb.className="feedback success";
+            } else {
+                fb.innerText=`❌ Faux. C'était ${ans}`; fb.className="feedback error";
+            }
+        }
+        function mobileConvert() {
+            const v = document.getElementById('m-tool-input').value;
+            document.getElementById('m-tool-res').innerText = parseInt(v).toString(2);
+        }
+        initMobileTraining();
+
+
+        // ============================================================
+        //  LOGIQUE CALCULATRICE NUMWORKS
+        // ============================================================
+        let nwInput = "";
+        function toggleGlobalCalc() {
+            document.getElementById('global-calc-panel').classList.toggle('open');
+            if(document.getElementById('global-calc-panel').classList.contains('open')) {
+                document.addEventListener('keydown', nwHandleKeyboard);
+            } else {
+                document.removeEventListener('keydown', nwHandleKeyboard);
+            }
+        }
+        function updateNwDisplay() { document.getElementById('nw-input').innerText = nwInput; }
+        function nwKey(val) { document.getElementById('nw-placeholder').style.display = 'none'; nwInput += val; updateNwDisplay(); }
+        function nwClear() { nwInput = ""; updateNwDisplay(); }
+        function nwBack() { nwInput = nwInput.slice(0, -1); updateNwDisplay(); }
+        function nwCalc() {
+            if(!nwInput) return;
+            let result = "";
+            try {
+                let expr = nwInput.replace(/\^/g, '**');
+                if(/[^0-9+\-*/().\s]/.test(expr)) throw new Error("Erreur");
+                result = eval(expr); 
+                if(!isFinite(result) || isNaN(result)) throw new Error("Erreur");
+                if(result.toString().length > 10) result = result.toPrecision(8);
+            } catch(e) { result = "Erreur"; }
+            const screen = document.getElementById('nw-screen');
+            const item = document.createElement('div');
+            item.className = 'nw-item';
+            item.innerHTML = `<div class="nw-expr">${nwInput}</div><div class="nw-res">${result}</div>`;
+            const currentLine = document.querySelector('.nw-current-line');
+            screen.insertBefore(item, currentLine);
+            screen.scrollTop = screen.scrollHeight;
+            nwInput = ""; updateNwDisplay();
+        }
+        function nwHandleKeyboard(e) {
+            const key = e.key;
+            if(key >= '0' && key <= '9') nwKey(key);
+            else if(['+', '-', '*', '/', '.', '(', ')'].includes(key)) nwKey(key);
+            else if(key === 'Enter') nwCalc();
+            else if(key === 'Backspace') nwBack();
+            else if(key === 'Escape') nwClear();
+            else if(key === '^') nwKey('**');
+        }
+
+
+        // ============================================================
+        //  LOGIQUE MODE EXPERT (DESKTOP) AVEC EXPLICATIONS
+        // ============================================================
+        
+        let ac_currentProblem = {};
+
+        function focusNext(el, nextId) {
+            if(el.value.length === 1) {
+                if(!/[01]/.test(el.value)) { el.value = ''; return; }
+                const next = document.getElementById(nextId);
+                if(next) next.focus();
+            }
+        }
+
+        function ac_switchTab(tabId) {
+            document.querySelectorAll('.expert-sub-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.expert-tab').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            const tabs = { 'ac-cours': 0, 'ac-training': 1 };
+            if(tabs[tabId] !== undefined) { document.querySelectorAll('.expert-tab')[tabs[tabId]].classList.add('active'); }
+            if(tabId === 'ac-training' && !ac_currentProblem.binRep) { ac_generateExercise(); }
+        }
+
+        function ac_toBinary(num, bits) {
+            let val = num;
+            if (val < 0) val = (1 << bits) + val; 
+            let bin = val.toString(2);
+            while (bin.length < bits) bin = "0" + bin;
+            return bin;
+        }
+
+        function ac_generateExercise() {
+            document.getElementById('ac_feedback').style.display = 'none';
+            for(let i=0; i<8; i++) document.getElementById('res-'+i).value = '';
+            document.getElementById('val-v').value = ''; document.getElementById('val-c').value = ''; document.getElementById('val-n').value = '';
+            
+            let numA = Math.floor(Math.random() * 256); if(numA > 127) numA -= 256; 
+            let numB = Math.floor(Math.random() * 256); if(numB > 127) numB -= 256;
+
+            let binA = ac_toBinary(numA, 8); let binB = ac_toBinary(numB, 8);
+            for(let i=0; i<8; i++) {
+                document.getElementById('a-'+i).innerText = binA.charAt(7-i);
+                document.getElementById('b-'+i).innerText = binB.charAt(7-i);
+            }
+
+            let sumFull = numA + numB;
+            let arr = new Int8Array(1); arr[0] = sumFull;
+            let resultSigned8 = arr[0];
+            let resultBin = ac_toBinary(resultSigned8, 8);
+
+            let flagN = (resultSigned8 < 0) ? '1' : '0';
+            let flagV = '0';
+            if (numA >= 0 && numB >= 0 && resultSigned8 < 0) flagV = '1';
+            if (numA < 0 && numB < 0 && resultSigned8 >= 0) flagV = '1';
+            let usA = (numA < 0) ? numA + 256 : numA;
+            let usB = (numB < 0) ? numB + 256 : numB;
+            let flagC = ((usA + usB) > 255) ? '1' : '0';
+
+            ac_currentProblem = { binRep: resultBin, V: flagV, C: flagC, N: flagN, decRep: resultSigned8 };
+        }
+
+        function ac_checkAnswer() {
+            let feedback = document.getElementById('ac_feedback'); feedback.style.display = 'block';
+            let errors = [];
+            let errorDetails = [];
+
+            // Vérification des Bits
+            let bitErrors = [];
+            for(let i=7; i>=0; i--) {
+                let cell = document.getElementById('res-'+i);
+                let val = cell.value;
+                if(val !== ac_currentProblem.binRep.charAt(7-i)) { 
+                    cell.style.backgroundColor = "#fee2e2"; cell.style.color = "#b91c1c"; 
+                    errors.push(`Bit ${i}`);
+                    bitErrors.push(i);
+                } else { 
+                    cell.style.backgroundColor = "#dcfce7"; cell.style.color = "#15803d"; 
+                }
+            }
+            if(bitErrors.length > 0) errorDetails.push(`Erreur de calcul sur les bits : ${bitErrors.join(', ')}.`);
+
+            let vIn = document.getElementById('val-v'); let cIn = document.getElementById('val-c'); let nIn = document.getElementById('val-n');
+            
+            // Check V
+            if(vIn.value !== ac_currentProblem.V) { 
+                vIn.style.backgroundColor = "#fee2e2"; errors.push("Flag V"); 
+                let reason = (ac_currentProblem.V === '1') ? "Dépassement signé (Signes incohérents)." : "Pas de dépassement signé.";
+                errorDetails.push(`Erreur V : ${reason}`);
+            } else vIn.style.backgroundColor = "#dcfce7";
+
+            // Check C
+            if(cIn.value !== ac_currentProblem.C) { 
+                cIn.style.backgroundColor = "#fee2e2"; errors.push("Flag C"); 
+                let reason = (ac_currentProblem.C === '1') ? "Retenue sortante (unsigned overflow)." : "Pas de retenue sortante.";
+                errorDetails.push(`Erreur C : ${reason}`);
+            } else cIn.style.backgroundColor = "#dcfce7";
+
+            // Check N
+            if(nIn.value !== ac_currentProblem.N) { 
+                nIn.style.backgroundColor = "#fee2e2"; errors.push("Flag N"); 
+                errorDetails.push("Erreur N : Doit être identique au Bit 7 (Bit de signe).");
+            } else nIn.style.backgroundColor = "#dcfce7";
+
+
+            if (errors.length === 0) { 
+                feedback.className = 'feedback-correct'; 
+                feedback.innerHTML = `<strong><i class="fas fa-check"></i> Excellent !</strong><br>Le résultat ${ac_currentProblem.decRep} et tous les drapeaux sont corrects.`; 
+            } else { 
+                feedback.className = 'feedback-wrong'; 
+                let html = `<strong><i class="fas fa-times"></i> Oups !</strong><br><ul class="error-list">`;
+                errorDetails.forEach(e => html += `<li>${e}</li>`);
+                html += `</ul>`;
+                feedback.innerHTML = html;
+            }
+        }
+
+
+        // ============================================================
+        //  LOGIQUE MOBILE EXPERT (AVEC EXPLICATIONS)
+        // ============================================================
+        let m_ac_solution_grid = {};
+
+        function initMobileExpertGrid() {
+            document.getElementById('m-ac-feedback').style.display = 'none';
+            for(let i=0; i<8; i++) {
+                let el = document.getElementById('m-res-'+i);
+                el.value = ''; el.style.backgroundColor = '#1c1c1e'; el.style.color = '#a5b4fc';
+            }
+            ['m-val-v', 'm-val-c', 'm-val-n'].forEach(id => {
+                let el = document.getElementById(id);
+                el.value = ''; el.style.backgroundColor = '#1c1c1e';
+            });
+            
+            let numA = Math.floor(Math.random() * 256); if(numA > 127) numA -= 256; 
+            let numB = Math.floor(Math.random() * 256); if(numB > 127) numB -= 256;
+
+            let binA = ac_toBinary(numA, 8); let binB = ac_toBinary(numB, 8);
+            for(let i=0; i<8; i++) {
+                document.getElementById('m-a-'+i).innerText = binA.charAt(7-i);
+                document.getElementById('m-b-'+i).innerText = binB.charAt(7-i);
+            }
+
+            let sumFull = numA + numB;
+            let arr = new Int8Array(1); arr[0] = sumFull;
+            let resultSigned8 = arr[0];
+            let resultBin = ac_toBinary(resultSigned8, 8);
+
+            let flagN = (resultSigned8 < 0) ? '1' : '0';
+            let flagV = '0';
+            if (numA >= 0 && numB >= 0 && resultSigned8 < 0) flagV = '1';
+            if (numA < 0 && numB < 0 && resultSigned8 >= 0) flagV = '1';
+            let usA = (numA < 0) ? numA + 256 : numA;
+            let usB = (numB < 0) ? numB + 256 : numB;
+            let flagC = ((usA + usB) > 255) ? '1' : '0';
+
+            m_ac_solution_grid = { binRep: resultBin, V: flagV, C: flagC, N: flagN };
+        }
+
+        function checkMobileExpertGrid() {
+            let feedback = document.getElementById('m-ac-feedback'); feedback.style.display = 'block';
+            let errors = [];
+            let errorDetails = [];
+
+            // Check Bits
+            let bitErrors = [];
+            for(let i=7; i>=0; i--) {
+                let cell = document.getElementById('m-res-'+i);
+                if(cell.value !== m_ac_solution_grid.binRep.charAt(7-i)) {
+                    cell.style.backgroundColor = "rgba(239, 68, 68, 0.2)"; cell.style.color = "#ef4444"; 
+                    errors.push(`Bit ${i}`);
+                    bitErrors.push(i);
+                } else {
+                    cell.style.backgroundColor = "rgba(16, 185, 129, 0.2)"; cell.style.color = "#10b981";
+                }
+            }
+            if(bitErrors.length > 0) errorDetails.push(`Bits incorrects : ${bitErrors.join(', ')}.`);
+
+            let vIn = document.getElementById('m-val-v'); let cIn = document.getElementById('m-val-c'); let nIn = document.getElementById('m-val-n');
+            
+            // Check V
+            if(vIn.value !== m_ac_solution_grid.V) {
+                vIn.style.backgroundColor = "rgba(239, 68, 68, 0.2)"; errors.push("V");
+                let reason = (m_ac_solution_grid.V === '1') ? "Dépassement signé (Incohérence)." : "Signes cohérents.";
+                errorDetails.push(`Flag V : ${reason}`);
+            } else vIn.style.backgroundColor = "rgba(16, 185, 129, 0.2)";
+
+            // Check C
+            if(cIn.value !== m_ac_solution_grid.C) {
+                cIn.style.backgroundColor = "rgba(239, 68, 68, 0.2)"; errors.push("C");
+                let reason = (m_ac_solution_grid.C === '1') ? "Débordement (Retenue sortante)." : "Pas de retenue.";
+                errorDetails.push(`Flag C : ${reason}`);
+            } else cIn.style.backgroundColor = "rgba(16, 185, 129, 0.2)";
+
+            // Check N
+            if(nIn.value !== m_ac_solution_grid.N) {
+                nIn.style.backgroundColor = "rgba(239, 68, 68, 0.2)"; errors.push("N");
+                errorDetails.push("Flag N : Doit copier le Bit 7.");
+            } else nIn.style.backgroundColor = "rgba(16, 185, 129, 0.2)";
+
+            if (errors.length === 0) {
+                feedback.className = 'feedback success'; feedback.innerHTML = `<strong>✅ Excellent !</strong><br>Tout est correct.`;
+            } else {
+                feedback.className = 'feedback error'; 
+                let html = `<strong>❌ Erreurs :</strong><br><ul class="error-list">`;
+                errorDetails.forEach(e => html += `<li>${e}</li>`);
+                html += `</ul>`;
+                feedback.innerHTML = html;
+            }
+        }
+
+
+        // ============================================================
+        //  FONCTIONS ORDI (CONVERSION / ENTRAINEMENT)
+        // ============================================================
+        function toolConvertDec() {
+            let val = parseInt(document.getElementById('conv_dec_input').value);
+            const isSigned = document.getElementById('conv_signed').checked;
+            const resDiv = document.getElementById('conv_dec_res');
+            if (isNaN(val)) { resDiv.innerHTML = "Entrée invalide"; return; }
+            if (!isSigned) {
+                if(val < 0) { resDiv.innerHTML = "Impossible en non-signé"; return; }
+                resDiv.innerHTML = `Résultat : <span class="binary-code">${val.toString(2)}</span>`;
+            } else {
+                if(val < -128 || val > 127) { resDiv.innerHTML = "Hors limites (-128 à +127)"; return; }
+                let bin;
+                if(val >= 0) bin = val.toString(2).padStart(8, '0');
+                else bin = (val >>> 0).toString(2).slice(-8);
+                resDiv.innerHTML = `Résultat (8 bits C2) : <span class="binary-code">${bin}</span>`;
+            }
+        }
+        function toolConvertBin() {
+            let val = document.getElementById('conv_bin_input').value.replace(/\s/g, '');
+            const isSigned = document.getElementById('conv_bin_signed').checked;
+            const resDiv = document.getElementById('conv_bin_res');
+            if (!/^[01]+$/.test(val)) { resDiv.innerHTML = "Uniquement des 0 et 1"; return; }
+            let dec = parseInt(val, 2);
+            if (isSigned) {
+                const bits = val.length;
+                const maxVal = Math.pow(2, bits - 1);
+                if (dec >= maxVal) { dec = dec - Math.pow(2, bits); }
+            }
+            resDiv.innerHTML = `Résultat : <strong>${dec}</strong>`;
+        }
+        
+        let currentMode = ''; let currentSolution = ''; let errorCount = 0;
+        function setTrainingMode(mode) {
+            currentMode = mode; document.getElementById('train_content').style.display = 'block';
+            const titles = {'dec2bin': 'Décimal → Binaire', 'bin2dec': 'Binaire → Décimal', 'addition': 'Addition Binaire', 'subtraction': 'Soustraction Binaire (C2)'};
+            document.getElementById('train_title').innerText = titles[mode];
+            document.querySelectorAll('#desktop-view #training .btn-outline').forEach(btn => {
+                if(btn.onclick.toString().includes(mode)) { btn.classList.add('btn-primary'); btn.classList.remove('btn-outline'); }
+                else { btn.classList.remove('btn-primary'); btn.classList.add('btn-outline'); }
+            });
+            generateQuestion();
+        }
+        function generateQuestion() {
+            const feedback = document.getElementById('train_feedback');
+            const hintBox = document.getElementById('train_hint');
+            feedback.style.display = 'none'; feedback.innerHTML = ''; hintBox.style.display = 'none';
+            document.getElementById('train_answer').value = ''; errorCount = 0;
+            let qText = '';
+            if (currentMode === 'dec2bin') {
+                const num = Math.floor(Math.random() * 64);
+                qText = `${num}₁₀ = ?₂`; currentSolution = num.toString(2);
+            } else if (currentMode === 'bin2dec') {
+                const num = Math.floor(Math.random() * 64);
+                qText = `${num.toString(2)}₂ = ?₁₀`; currentSolution = num.toString();
+            } else if (currentMode === 'addition') {
+                const a = Math.floor(Math.random() * 32); const b = Math.floor(Math.random() * 32);
+                qText = `${a.toString(2).padStart(6,'0')}<br>+ ${b.toString(2).padStart(6,'0')}`;
+                currentSolution = (a+b).toString(2);
+            } else if (currentMode === 'subtraction') {
+                let a = Math.floor(Math.random() * 32) + 16; let b = Math.floor(Math.random() * 15);
+                qText = `${a.toString(2).padStart(6,'0')}<br>- ${b.toString(2).padStart(6,'0')}`;
+                currentSolution = (a-b).toString(2);
+            }
+            document.getElementById('train_question').innerHTML = qText;
+        }
+        function checkAnswer() {
+            let userAns = document.getElementById('train_answer').value.replace(/\s/g, '').replace(/^0+/, '') || '0';
+            let sol = currentSolution.replace(/^0+/, '') || '0';
+            const feedback = document.getElementById('train_feedback'); feedback.style.display = 'block';
+            if (userAns === sol) {
+                feedback.innerHTML = `<strong><i class="fas fa-check-circle"></i> Bravo !</strong>`;
+                feedback.style.background = '#dcfce7'; feedback.style.color = '#166534';
+                document.getElementById('train_hint').style.display = 'none'; setTimeout(generateQuestion, 2000);
+            } else {
+                errorCount++; feedback.style.background = '#fee2e2'; feedback.style.color = '#991b1b';
+                feedback.innerHTML = `<strong><i class="fas fa-times-circle"></i> Incorrect.</strong>`;
+                if (errorCount >= 3) showHint();
+            }
+        }
+        function showHint() {
+            document.getElementById('train_hint').style.display = 'block';
+            let msg = "";
+            if (currentMode === 'dec2bin') msg = "Décomposez en puissances de 2.";
+            else if (currentMode === 'bin2dec') msg = "Additionnez les poids : 1, 2, 4, 8...";
+            else if (currentMode === 'addition') msg = "1+1=0 retenue 1.";
+            else if (currentMode === 'subtraction') msg = "Calculez l'opposé de B (inversion + 1) et additionnez.";
+            document.getElementById('hint_text').innerText = msg;
+        }
+        function showCorrection() {
+            const feedback = document.getElementById('train_feedback');
+            feedback.style.display = 'block'; feedback.style.background = '#f1f5f9'; feedback.style.color = 'var(--d-text-main)';
+            feedback.innerHTML = `<strong>Correction :</strong> ${currentSolution}.`;
+            document.getElementById('train_answer').value = currentSolution;
+        }
+
+        // Init
+        if(window.innerWidth > 800) toggleMode();
+    </script>
+<style>
+    /* L'écran noir qui recouvre tout au début */
+    #page-transition-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background-color: #050505; /* Noir profond du thème */
+        z-index: 99999; /* Au-dessus de tout */
+        opacity: 1;
+        transition: opacity 0.4s ease-in-out; /* Durée de la transition */
+        pointer-events: none; /* Permet de cliquer si jamais ça bug */
+    }
+    
+    /* Classe ajoutée en JS pour rendre transparent */
+    #page-transition-overlay.hidden {
+        opacity: 0;
+    }
+</style>
+
+<div id="page-transition-overlay"></div>
+
+<script>
+    // 1. TRANSITION D'ENTRÉE (FADE IN)
+    window.addEventListener('load', () => {
+        const overlay = document.getElementById('page-transition-overlay');
+        if(overlay) {
+            // Petit délai pour être sûr que le navigateur a affiché le fond noir
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+            }, 50);
+        }
+    });
+
+    // 2. TRANSITION DE SORTIE (FADE OUT)
+    document.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', function(e) {
+            const target = this.getAttribute('href');
+            
+            // On n'anime que les liens internes réels (pas les #, pas les liens externes)
+            if (target && target !== '#' && !target.startsWith('javascript') && this.target !== '_blank') {
+                e.preventDefault(); // Bloque le changement de page immédiat
+                
+                const overlay = document.getElementById('page-transition-overlay');
+                if(overlay) {
+                    overlay.classList.remove('hidden'); // Remet le noir
+                    
+                    // Attend la fin de l'animation (0.4s) avant de changer de page
+                    setTimeout(() => {
+                        window.location.href = target;
+                    }, 400); 
+                } else {
+                    window.location.href = target; // Sécurité si l'overlay n'existe pas
+                }
+            }
+        });
+    });
+</script>
+</body>
+</html>

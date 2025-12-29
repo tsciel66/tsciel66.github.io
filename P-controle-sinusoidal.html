@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <title>Révision Sinusoïdale</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌩️</text></svg>">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #1e40af;
+            --accent: #f59e0b;
+            --bg: #f3f4f6;
+            --card: #ffffff;
+            --text: #1f2937;
+            --correct: #10b981;
+            --wrong: #ef4444;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* BARRE DE RETOUR */
+        .top-bar {
+            background-color: #0f172a;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+        }
+        .btn-retour {
+            text-decoration: none;
+            color: white;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(255,255,255,0.1);
+            padding: 5px 10px;
+            border-radius: 8px;
+        }
+
+        /* Navigation */
+        nav {
+            background-color: var(--primary);
+            padding: 1rem;
+            display: flex;
+            justify-content: space-around;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        nav button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1rem;
+            font-weight: bold;
+            opacity: 0.7;
+            padding-bottom: 5px;
+        }
+
+        nav button.active {
+            opacity: 1;
+            border-bottom: 3px solid var(--accent);
+        }
+
+        /* Contenu */
+        main {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .section {
+            display: none;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .section.active { display: block; }
+
+        /* Cartes Générales */
+        .card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        h2 { color: var(--secondary); margin-top: 0; }
+        h3 { font-size: 1.1rem; color: var(--primary); margin-bottom: 5px; }
+        
+        .formula {
+            font-family: 'Courier New', monospace;
+            background: #eef2ff;
+            padding: 10px;
+            border-radius: 6px;
+            display: block;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        /* --- NOUVEAU STYLE QCM --- */
+        .qcm-question {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--secondary);
+        }
+
+        .qcm-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .qcm-btn {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e5e7eb;
+            background: white;
+            border-radius: 10px;
+            font-size: 1rem;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .qcm-btn:hover:not(:disabled) {
+            border-color: var(--primary);
+            background-color: #eff6ff;
+        }
+
+        .qcm-btn.correct {
+            background-color: #d1fae5;
+            border-color: var(--correct);
+            color: #064e3b;
+            font-weight: bold;
+        }
+
+        .qcm-btn.wrong {
+            background-color: #fee2e2;
+            border-color: var(--wrong);
+            color: #991b1b;
+        }
+
+        /* EXERCICES Styles */
+        .input-group { margin: 15px 0; }
+        
+        input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            font-size: 1.2rem;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .result-box {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            display: none;
+        }
+        
+        .correct-msg { background-color: #d1fae5; color: #065f46; }
+        .wrong-msg { background-color: #fee2e2; color: #991b1b; }
+
+    </style>
+</head>
+<body>
+
+<div class="top-bar">
+    <a href="p-controles-revisions.html" class="btn-retour">⬅ Retour Menu</a>
+</div>
+
+<nav>
+    <button onclick="switchTab('cours')" id="nav-cours" class="active">Cours</button>
+    <button onclick="switchTab('qcm')" id="nav-qcm">QCM</button>
+    <button onclick="switchTab('exo')" id="nav-exo">Exercices</button>
+</nav>
+
+<main>
+    <div id="cours" class="section active">
+        <div class="card">
+            <h2>Les Bases</h2>
+            <h3>Fréquence (f)</h3>
+            <span class="formula">f = 1 / T</span>
+            <p>Unités : f en Hertz (Hz), T en secondes (s).</p>
+            
+            <h3>Période (T)</h3>
+            <span class="formula">T = 1 / f</span>
+            
+            <h3>Pulsation (ω)</h3>
+            <span class="formula">ω = 2 × π × f</span>
+            <span class="formula">ω = (2 × π) / T</span>
+            <p>Unité : radians par seconde (rad/s).</p>
+        </div>
+
+        <div class="card">
+            <h2>Tension & Amplitude</h2>
+            <h3>Valeur Efficace (Ueff)</h3>
+            <span class="formula">Ueff = Umax / √2</span>
+            <p>Note: √2 ≈ 1.414</p>
+            
+            <h3>Tension instantanée u(t)</h3>
+            <span class="formula">u(t) = Umax × sin(ωt + θ)</span>
+            <ul>
+                <li>Umax : Amplitude (V)</li>
+                <li>ω : Pulsation (rad/s)</li>
+                <li>θ : Phase à l'origine (rad)</li>
+            </ul>
+        </div>
+    </div>
+
+    <div id="qcm" class="section">
+        <div class="card">
+            <div id="qcm-content">
+                <p class="qcm-question" id="qcm-question-text">Chargement de la question...</p>
+                <div class="qcm-options" id="qcm-options-container">
+                    </div>
+            </div>
+            
+            <div id="qcm-feedback" class="result-box"></div>
+            
+            <button class="btn" id="btn-next-qcm" style="background-color: var(--secondary); display:none;" onclick="loadNextQCM()">Question Suivante ➜</button>
+        </div>
+    </div>
+
+    <div id="exo" class="section">
+        <div class="card">
+            <h2 id="exo-title">Exercice de calcul</h2>
+            <p id="exo-question">Chargement...</p>
+            
+            <div class="input-group">
+                <input type="number" id="user-answer" placeholder="Votre réponse" step="0.01">
+            </div>
+            
+            <button class="btn" onclick="checkAnswer()">Vérifier</button>
+            <button class="btn" style="background-color: var(--secondary); margin-top:10px; display:none;" id="btn-next-exo" onclick="generateExercise()">Question Suivante</button>
+            
+            <div id="result" class="result-box"></div>
+        </div>
+        <div class="card" style="background-color: #fffbeb;">
+            <small>💡 Astuce : Utilisez un point pour les décimales (ex: 3.14)</small>
+        </div>
+    </div>
+</main>
+
+<script>
+    // --- GESTION DES ONGLETS ---
+    function switchTab(tabId) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+        
+        document.getElementById(tabId).classList.add('active');
+        document.getElementById('nav-' + tabId).classList.add('active');
+        
+        if(tabId === 'qcm') loadNextQCM();
+        if(tabId === 'exo') generateExercise();
+    }
+
+    // --- LOGIQUE QCM ---
+    const qcmData = [
+        { 
+            question: "Quelle est la relation entre la fréquence (f) et la période (T) ?", 
+            correct: "f = 1 / T", 
+            wrongs: ["f = T", "f = 2π / T", "f = T²"] 
+        },
+        { 
+            question: "Quelle est l'unité de la pulsation ω (oméga) ?", 
+            correct: "rad/s (radians par seconde)", 
+            wrongs: ["Hz (Hertz)", "s (secondes)", "V (Volts)"] 
+        },
+        { 
+            question: "Comment calculer U efficace à partir de Umax ?", 
+            correct: "Umax / √2", 
+            wrongs: ["Umax × √2", "Umax / 2", "Umax × 2"] 
+        },
+        { 
+            question: "Combien vaut approximativement √2 ?", 
+            correct: "1.414", 
+            wrongs: ["1.732", "3.14", "0.707"] 
+        },
+        { 
+            question: "Quelle est la formule pour convertir un décalage temporel τ en déphasage (en degrés) ?", 
+            correct: "φ = (360 × τ) / T", 
+            wrongs: ["φ = (2π × τ) / T", "φ = 360 × T × τ", "φ = τ / T"] 
+        },
+        { 
+            question: "Dans u(t) = Umax sin(ωt + θ), que représente θ ?", 
+            correct: "La phase à l'origine", 
+            wrongs: ["La période", "La fréquence", "L'amplitude"] 
+        }
+    ];
+
+    function loadNextQCM() {
+        // Reset UI
+        document.getElementById('qcm-feedback').style.display = 'none';
+        document.getElementById('btn-next-qcm').style.display = 'none';
+        const container = document.getElementById('qcm-options-container');
+        container.innerHTML = ''; // Vide les anciens boutons
+
+        // Choisir une question au hasard
+        const randomIndex = Math.floor(Math.random() * qcmData.length);
+        const data = qcmData[randomIndex];
+
+        document.getElementById('qcm-question-text').innerText = data.question;
+
+        // Créer un tableau avec la bonne réponse ET les mauvaises
+        let options = [...data.wrongs]; // Copie les mauvaises
+        options.push(data.correct); // Ajoute la bonne
+
+        // Mélanger les options pour que la bonne réponse ne soit pas toujours en dernier
+        options.sort(() => Math.random() - 0.5);
+
+        // Générer les boutons HTML
+        options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'qcm-btn';
+            btn.innerText = opt;
+            btn.onclick = () => checkQCMResponse(btn, opt, data.correct);
+            container.appendChild(btn);
+        });
+    }
+
+    function checkQCMResponse(btnElement, selectedValue, correctValue) {
+        // Désactiver tous les boutons pour ne pas cliquer plusieurs fois
+        const allBtns = document.querySelectorAll('.qcm-btn');
+        allBtns.forEach(b => b.disabled = true);
+
+        const feedback = document.getElementById('qcm-feedback');
+        const nextBtn = document.getElementById('btn-next-qcm');
+
+        if (selectedValue === correctValue) {
+            // C'est GAGNÉ
+            btnElement.classList.add('correct');
+            feedback.innerHTML = "✅ Bonne réponse !";
+            feedback.className = "result-box correct-msg";
+        } else {
+            // C'est PERDU
+            btnElement.classList.add('wrong');
+            feedback.innerHTML = `❌ Incorrect. La bonne réponse était : <b>${correctValue}</b>`;
+            feedback.className = "result-box wrong-msg";
+            
+            // On montre visuellement quelle était la bonne réponse
+            allBtns.forEach(b => {
+                if (b.innerText === correctValue) b.classList.add('correct');
+            });
+        }
+
+        feedback.style.display = 'block';
+        nextBtn.style.display = 'inline-block';
+    }
+
+    // --- GÉNÉRATEUR D'EXERCICES (Partie déjà existante) ---
+    let currentAnswer = 0;
+
+    function generateExercise() {
+        document.getElementById('result').style.display = 'none';
+        document.getElementById('btn-next-exo').style.display = 'none';
+        document.getElementById('user-answer').value = '';
+
+        const type = Math.floor(Math.random() * 6);
+        let qText = "";
+        
+        if (type === 0) { 
+            const T_ms = (Math.random() * 20 + 1).toFixed(1);
+            currentAnswer = 1000 / T_ms; 
+            qText = `On donne la période <b>T = ${T_ms} ms</b>.<br>Calculer la fréquence f (en Hz).`;
+        } 
+        else if (type === 1) { 
+            const f = Math.floor(Math.random() * 1000 + 50);
+            currentAnswer = (1 / f) * 1000; 
+            qText = `On donne la fréquence <b>f = ${f} Hz</b>.<br>Calculer la période T (en ms).`;
+        }
+        else if (type === 2) { 
+            const f = Math.floor(Math.random() * 500 + 50);
+            currentAnswer = 2 * Math.PI * f;
+            qText = `On donne la fréquence <b>f = ${f} Hz</b>.<br>Calculer la pulsation ω (en rad/s).`;
+        }
+        else if (type === 3) { 
+            const Umax = Math.floor(Math.random() * 20 + 2);
+            currentAnswer = Umax / Math.sqrt(2);
+            qText = `L'amplitude est <b>Umax = ${Umax} V</b>.<br>Calculer la valeur efficace Ueff (en V).`;
+        }
+        else if (type === 4) { 
+            const omega = Math.floor(Math.random() * 500 + 100);
+            const umax = Math.floor(Math.random() * 10 + 1);
+            qText = `Soit la tension : <b>u(t) = ${umax} sin(${omega} t - 0.5)</b>.<br>Quelle est la pulsation ω (en rad/s) ?`;
+            currentAnswer = omega; 
+        }
+        else if (type === 5) { 
+            const T = 20; 
+            const tau = Math.floor(Math.random() * 4 + 1);
+            currentAnswer = (360 * tau) / T;
+            qText = `Sur un graphe, la période T = ${T} ms et le décalage entre les courbes est τ = ${tau} ms.<br>Calculer le déphasage φ en degrés (°).`;
+        }
+
+        document.getElementById('exo-question').innerHTML = qText;
+    }
+
+    function checkAnswer() {
+        let userVal = parseFloat(document.getElementById('user-answer').value);
+        if (isNaN(userVal)) return;
+
+        let margin = Math.abs(currentAnswer * 0.05);
+        if (currentAnswer === 0) margin = 0.1; 
+
+        const resultBox = document.getElementById('result');
+        const nextBtn = document.getElementById('btn-next-exo');
+        
+        if (Math.abs(userVal - currentAnswer) <= margin) {
+            resultBox.innerHTML = "✅ Bravo ! Réponse correcte.";
+            resultBox.className = "result-box correct-msg";
+        } else {
+            resultBox.innerHTML = `❌ Incorrect.<br>La bonne réponse était environ <b>${currentAnswer.toFixed(2)}</b>.`;
+            resultBox.className = "result-box wrong-msg";
+        }
+        
+        resultBox.style.display = 'block';
+        nextBtn.style.display = 'inline-block';
+    }
+
+    // Lance le chargement initial si l'onglet est actif (rare au chargement de page mais bon)
+    // Sinon c'est géré par le switchTab
+</script>
+<style>
+    /* L'écran noir qui recouvre tout au début */
+    #page-transition-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background-color: #050505; /* Noir profond du thème */
+        z-index: 99999; /* Au-dessus de tout */
+        opacity: 1;
+        transition: opacity 0.4s ease-in-out; /* Durée de la transition */
+        pointer-events: none; /* Permet de cliquer si jamais ça bug */
+    }
+    
+    /* Classe ajoutée en JS pour rendre transparent */
+    #page-transition-overlay.hidden {
+        opacity: 0;
+    }
+</style>
+
+<div id="page-transition-overlay"></div>
+
+<script>
+    // 1. TRANSITION D'ENTRÉE (FADE IN)
+    window.addEventListener('load', () => {
+        const overlay = document.getElementById('page-transition-overlay');
+        if(overlay) {
+            // Petit délai pour être sûr que le navigateur a affiché le fond noir
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+            }, 50);
+        }
+    });
+
+    // 2. TRANSITION DE SORTIE (FADE OUT)
+    document.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', function(e) {
+            const target = this.getAttribute('href');
+            
+            // On n'anime que les liens internes réels (pas les #, pas les liens externes)
+            if (target && target !== '#' && !target.startsWith('javascript') && this.target !== '_blank') {
+                e.preventDefault(); // Bloque le changement de page immédiat
+                
+                const overlay = document.getElementById('page-transition-overlay');
+                if(overlay) {
+                    overlay.classList.remove('hidden'); // Remet le noir
+                    
+                    // Attend la fin de l'animation (0.4s) avant de changer de page
+                    setTimeout(() => {
+                        window.location.href = target;
+                    }, 400); 
+                } else {
+                    window.location.href = target; // Sécurité si l'overlay n'existe pas
+                }
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
