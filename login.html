@@ -127,31 +127,43 @@
     </div>
 
 <script>
-    function login() {
-        // 1. On récupère ce que l'utilisateur a écrit
-        var u = document.getElementById('username').value;
-        var p = document.getElementById('password').value;
-        var err = document.getElementById('error');
+    // Fonction cryptographique (SHA-256)
+    async function sha256(message) {
+        const msgBuffer = new TextEncoder().encode(message);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        return hashHex;
+    }
 
-        // 2. On définit les bons identifiants (En clair)
-        var bonUtilisateur = "etudiant";
-        var bonMotDePasse = "tsciel2025";
+    async function login() {
+        const u = document.getElementById('username').value.trim(); // .trim() enlève les espaces
+        const p = document.getElementById('password').value.trim();
+        const err = document.getElementById('error');
 
-        // 3. On compare (ET on force tout en minuscules pour éviter les erreurs de majuscules)
-        if (u.toLowerCase() === bonUtilisateur && p === bonMotDePasse) {
-            
-            // C'est gagné ! On enregistre que c'est bon
+        // --- CONFIGURATION SÉCURISÉE ---
+        const userCible = 'etudiant';
+        // Hash réel de "tsciel2025"
+        const passHashCible = 'd056372b0de35d726527b2d559df4a323386e680a6c0f7db69643d995c69704e';
+
+        // On calcule le hash de ce que l'utilisateur a tapé
+        const hashSaisi = await sha256(p);
+
+        // Mouchard pour le débogage (Visible avec F12 > Console)
+        console.log("Utilisateur saisi :", u);
+        console.log("Hash attendu :", passHashCible);
+        console.log("Hash calculé :", hashSaisi);
+
+        // Vérification
+        if(u.toLowerCase() === userCible && hashSaisi === passHashCible) {
             sessionStorage.setItem('authenticated', 'true');
-            
-            // On redirige vers l'accueil
             window.location.href = 'index.html';
-            
         } else {
-            // C'est perdu ! Animation d'erreur
             err.style.display = 'block';
-            err.innerHTML = "❌ Erreur : Identifiant ou mot de passe incorrect";
+            err.innerHTML = "❌ Identifiant ou mot de passe incorrect";
             
-            var card = document.querySelector('.login-card');
+            // Animation de secousse
+            const card = document.querySelector('.login-card');
             card.animate([
                 { transform: 'translateX(0)' },
                 { transform: 'translateX(-10px)' },
@@ -161,7 +173,7 @@
         }
     }
     
-    // Permet de valider en appuyant sur la touche Entrée
+    // Validation avec la touche Entrée
     document.addEventListener('keypress', function (e) {
         if (e.key === 'Enter') login();
     });
