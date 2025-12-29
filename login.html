@@ -127,8 +127,9 @@
     </div>
 
 <script>
-    // Fonction cryptographique (SHA-256)
+    // --- 1. La fonction de hachage (Moteur de sécurité) ---
     async function sha256(message) {
+        // Cette fonction transforme le texte en empreinte numérique illisible
         const msgBuffer = new TextEncoder().encode(message);
         const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
         const hashArray = Array.from(new Uint8Array(hashBuffer));
@@ -137,32 +138,42 @@
     }
 
     async function login() {
-        const u = document.getElementById('username').value.trim(); // .trim() enlève les espaces
+        // --- 2. Récupération & Nettoyage ---
+        // .trim() est CRUCIAL : il enlève les espaces avant/après que les téléphones ajoutent souvent
+        const u = document.getElementById('username').value.trim();
         const p = document.getElementById('password').value.trim();
         const err = document.getElementById('error');
 
-        // --- CONFIGURATION SÉCURISÉE ---
+        // --- 3. Configuration de la sécurité ---
+        // L'utilisateur autorisé (On le met en minuscules pour comparer facilement)
         const userCible = 'etudiant';
-        // Hash réel de "tsciel2025"
-        const passHashCible = 'd056372b0de35d726527b2d559df4a323386e680a6c0f7db69643d995c69704e';
+        
+        // L'empreinte SHA-256 de "tsciel2025" (Impossible de deviner le mdp en lisant ça)
+        const hashCible = 'd056372b0de35d726527b2d559df4a323386e680a6c0f7db69643d995c69704e';
 
-        // On calcule le hash de ce que l'utilisateur a tapé
+        // --- 4. Calcul de l'empreinte de ce que l'utilisateur a tapé ---
         const hashSaisi = await sha256(p);
 
-        // Mouchard pour le débogage (Visible avec F12 > Console)
+        // Outils de débogage (Appuyez sur F12 > Console pour voir ce qu'il se passe si ça bloque)
         console.log("Utilisateur saisi :", u);
-        console.log("Hash attendu :", passHashCible);
+        console.log("Hash attendu :", hashCible);
         console.log("Hash calculé :", hashSaisi);
 
-        // Vérification
-        if(u.toLowerCase() === userCible && hashSaisi === passHashCible) {
+        // --- 5. Vérification ---
+        // On compare l'utilisateur (en minuscules) et les deux empreintes numériques
+        if(u.toLowerCase() === userCible && hashSaisi === hashCible) {
+            
+            // SUCCÈS
             sessionStorage.setItem('authenticated', 'true');
             window.location.href = 'index.html';
+            
         } else {
+            
+            // ÉCHEC
             err.style.display = 'block';
             err.innerHTML = "❌ Identifiant ou mot de passe incorrect";
             
-            // Animation de secousse
+            // Animation
             const card = document.querySelector('.login-card');
             card.animate([
                 { transform: 'translateX(0)' },
@@ -173,7 +184,7 @@
         }
     }
     
-    // Validation avec la touche Entrée
+    // Touche Entrée pour valider
     document.addEventListener('keypress', function (e) {
         if (e.key === 'Enter') login();
     });
