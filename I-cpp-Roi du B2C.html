@@ -1,0 +1,611 @@
+<html lang="fr"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SYS_B2C // SIMULATOR</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&amp;family=Fira+Code:wght@400;600&amp;display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22&gt;&lt;text y=%22.9em%22 font-size=%2290%22&gt;👑&lt;/text&gt;&lt;/svg&gt;">
+    
+    <style>
+        /* --- THEME HIGH-TECH / CYBER (Importé de info.html) --- */
+        :root {
+            --bg-color: #050505;
+            --grid-color: rgba(0, 255, 65, 0.05);
+            --card-bg: rgba(10, 20, 30, 0.85);
+            --neon-green: #00ff41;
+            --neon-blue: #00f3ff;
+            --neon-red: #ff0055;
+            --text-main: #e0e0e0;
+            --font-ui: 'Share Tech Mono', monospace;
+            --font-code: 'Fira Code', monospace;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-ui);
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+            overflow-x: hidden;
+            
+            /* Fond "Grille Informatique" */
+            background-image: 
+                linear-gradient(var(--grid-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px),
+                radial-gradient(circle at 50% 0%, rgba(0, 243, 255, 0.15) 0%, transparent 60%);
+            background-size: 40px 40px, 40px 40px, 100% 100%;
+        }
+
+        /* --- HEADER TERMINAL --- */
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 400;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-shadow: 2px 0 var(--neon-green), -2px 0 var(--neon-blue);
+            color: white;
+            margin-bottom: 5px;
+            text-align: center;
+            margin-top: 40px; /* Espace pour les boutons */
+        }
+        .subtitle { 
+            color: var(--neon-blue); 
+            opacity: 0.8; 
+            font-size: 0.9rem; 
+            margin-bottom: 20px; 
+            text-align: center;
+            letter-spacing: 1px;
+        }
+
+        /* --- INTERRUPTEUR MODE (SWITCH CYBER) --- */
+        .mode-switch-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--neon-blue);
+            padding: 8px 20px;
+            border-radius: 4px; /* Carré tech */
+            margin-bottom: 20px;
+            font-size: 0.9em;
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.1);
+        }
+        
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+            margin: 0 15px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #111;
+            border: 1px solid #555;
+            transition: .4s;
+            border-radius: 2px; /* Style angulaire */
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px; width: 16px;
+            left: 3px; bottom: 3px;
+            background-color: var(--neon-blue);
+            transition: .4s;
+            box-shadow: 0 0 8px var(--neon-blue);
+        }
+        input:checked + .slider { border-color: var(--neon-green); }
+        input:checked + .slider:before { transform: translateX(26px); background-color: var(--neon-green); box-shadow: 0 0 8px var(--neon-green); }
+
+        /* --- CONTENEUR PRINCIPAL (GLASS PANEL) --- */
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            width: 100%;
+            max-width: 1100px;
+            background: var(--card-bg);
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-left: 4px solid var(--neon-blue);
+            border-radius: 4px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        /* Effet scanline décoratif */
+        .container::before {
+            content: "SYS_MONITORING";
+            position: absolute;
+            top: -12px; right: 10px;
+            background: var(--bg-color);
+            padding: 0 10px;
+            color: var(--neon-blue);
+            font-size: 0.7em;
+            letter-spacing: 2px;
+        }
+
+        /* --- MODE MOBILE --- */
+        body.mobile-view .container { flex-direction: column; padding: 10px; }
+        body.mobile-view .code-panel, body.mobile-view .visualization-panel { width: 100%; min-width: 100%; }
+
+        /* --- MENU LATERAL (SLIDE) --- */
+        #sideMenu {
+            position: fixed; top: 0; right: -450px;
+            width: 100%; max-width: 400px; height: 100vh;
+            background: rgba(5, 5, 5, 0.95);
+            border-left: 2px solid var(--neon-green);
+            transition: right 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            z-index: 1000;
+            padding: 20px;
+            box-shadow: -10px 0 30px rgba(0,0,0,0.8);
+            overflow-y: auto;
+            backdrop-filter: blur(5px);
+        }
+        #sideMenu.open { right: 0; }
+        
+        .menu-header { border-bottom: 1px solid var(--neon-green); padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .menu-title { color: var(--neon-green); font-size: 1.4em; text-shadow: 0 0 5px var(--neon-green); margin: 0; }
+        .close-btn { background: none; border: 1px solid var(--neon-green); color: var(--neon-green); width: 30px; height: 30px; cursor: pointer; font-family: var(--font-code); }
+        .close-btn:hover { background: var(--neon-green); color: black; }
+
+        .lesson-block { margin-bottom: 20px; border: 1px solid #333; background: rgba(255,255,255,0.03); padding: 15px; border-left: 3px solid var(--neon-blue); }
+        .lesson-title { color: var(--neon-blue); font-weight: bold; margin-bottom: 8px; font-family: var(--font-code); }
+        .lesson-code { background: rgba(0,0,0,0.5); color: #e67e22; padding: 2px 6px; border-radius: 2px; border: 1px solid #333; font-family: var(--font-code); font-size: 0.85em; }
+        .lesson-desc { font-size: 0.9em; line-height: 1.4; color: #ccc; }
+
+        .toggle-menu-btn {
+            position: fixed; top: 20px; right: 20px;
+            background: rgba(0,0,0,0.8);
+            border: 1px solid var(--neon-green);
+            color: var(--neon-green);
+            padding: 8px 15px;
+            cursor: pointer;
+            z-index: 900;
+            font-family: var(--font-ui);
+            letter-spacing: 1px;
+            transition: 0.3s;
+        }
+        .toggle-menu-btn:hover { background: var(--neon-green); color: black; box-shadow: 0 0 15px var(--neon-green); }
+
+        /* BOUTON RETOUR AJOUTÉ */
+        .back-home-btn {
+            position: fixed; top: 20px; left: 20px;
+            background: rgba(0,0,0,0.8);
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-blue);
+            padding: 8px 15px;
+            cursor: pointer;
+            z-index: 900;
+            font-family: var(--font-ui);
+            letter-spacing: 1px;
+            transition: 0.3s;
+            text-decoration: none;
+            font-size: 0.8rem;
+        }
+        .back-home-btn:hover { background: var(--neon-blue); color: black; box-shadow: 0 0 15px var(--neon-blue); }
+
+        /* --- CODE PANEL --- */
+        .code-panel {
+            flex: 1;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            padding: 15px;
+            font-family: var(--font-code);
+            font-size: 14px;
+            overflow-x: auto;
+            position: relative;
+        }
+        .code-panel::before { content: "SOURCE_CODE"; position: absolute; top: 0; right: 0; background: #30363d; padding: 2px 8px; font-size: 0.7em; color: #aaa; }
+
+        .line { padding: 2px 5px; border-left: 3px solid transparent; white-space: pre; opacity: 0.7; }
+        .active-line { 
+            background-color: rgba(56, 139, 253, 0.15); 
+            border-left: 3px solid var(--neon-blue); 
+            color: white; 
+            opacity: 1; 
+            text-shadow: 0 0 5px rgba(0, 243, 255, 0.4);
+        }
+
+        /* --- VISUALIZATION --- */
+        .visualization-panel { flex: 1.2; display: flex; flex-direction: column; gap: 15px; }
+
+        .panel-label { color: var(--neon-green); font-size: 0.8em; margin-bottom: 5px; text-transform: uppercase; border-bottom: 1px solid #333; padding-bottom: 2px; }
+
+        .console-box {
+            background: #000;
+            color: var(--neon-green);
+            padding: 10px;
+            border: 1px solid #333;
+            font-family: var(--font-code);
+            min-height: 80px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+        }
+
+        .memory-area {
+            background-color: rgba(0,0,0,0.3);
+            border: 1px solid #333;
+            padding: 20px;
+            min-height: 300px;
+            background-image: radial-gradient(#333 1px, transparent 1px);
+            background-size: 20px 20px;
+            position: relative;
+        }
+
+        /* --- BOITES VARIABLES CYBER --- */
+        .var-box {
+            display: inline-block;
+            border: 1px solid var(--neon-blue);
+            background: rgba(0, 20, 40, 0.9);
+            margin: 20px 15px;
+            padding: 10px;
+            min-width: 80px;
+            text-align: center;
+            vertical-align: top;
+            position: relative;
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.1);
+        }
+        
+        .var-name {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #000;
+            color: var(--neon-blue);
+            border: 1px solid var(--neon-blue);
+            padding: 0 8px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .var-type {
+            font-size: 0.7em;
+            color: #666;
+            margin-top: 5px;
+            border-top: 1px dashed #333;
+            padding-top: 2px;
+        }
+
+        .value-list { list-style: none; padding: 0; margin: 0; font-family: var(--font-code); }
+        
+        .crossed-out { 
+            text-decoration: line-through; 
+            color: var(--neon-red); 
+            opacity: 0.5; 
+            font-size: 0.8em; 
+        }
+        
+        .current-value { 
+            color: var(--neon-green); 
+            font-weight: bold; 
+            font-size: 1.2em; 
+            text-shadow: 0 0 5px rgba(0, 255, 65, 0.5);
+            display: block;
+            margin-top: 2px;
+        }
+
+        .pointer-arrow { 
+            color: var(--neon-blue); 
+            font-weight: bold; 
+            text-shadow: 0 0 5px var(--neon-blue);
+        }
+
+        /* --- BOUTONS --- */
+        .controls { display: flex; justify-content: center; gap: 15px; margin-top: 20px; flex-wrap: wrap; }
+        
+        .cyber-btn {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--neon-green);
+            color: var(--neon-green);
+            padding: 12px 25px;
+            font-family: var(--font-ui);
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cyber-btn:hover:not(:disabled) {
+            background: rgba(0, 255, 65, 0.1);
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+            text-shadow: 0 0 5px var(--neon-green);
+        }
+
+        .cyber-btn:disabled { border-color: #444; color: #444; cursor: not-allowed; }
+
+        .btn-purple { border-color: #a855f7; color: #a855f7; }
+        .btn-purple:hover:not(:disabled) { background: rgba(168, 85, 247, 0.1); box-shadow: 0 0 20px rgba(168, 85, 247, 0.3); text-shadow: 0 0 5px #a855f7; }
+
+    </style>
+</head>
+<body>
+
+    <a href="I-cpp.html" class="back-home-btn">&lt;&lt; RETOUR_MENU</a>
+
+    <button class="toggle-menu-btn" onclick="toggleMenu()">Besoins d'aide ?</button>
+
+    <h1>&gt;_ LE ROI DU B2C 👑</h1>
+    <div class="subtitle">Prend ton brouillon et essaie de prédire se qui va arriver avant que tu clique sur " suivant " ! </div>
+
+    <div class="mode-switch-container">
+        <span style="color: var(--neon-blue)">ordi</span>
+        <label class="switch">
+            <input type="checkbox" id="layoutToggle" onchange="toggleLayout()">
+            <span class="slider"></span>
+        </label>
+        <span style="color: var(--neon-green)">MOBILE</span>
+    </div>
+
+    <div id="sideMenu" class="">
+        <div class="menu-header">
+            <h2 class="menu-title">MANUAL.TXT</h2>
+            <button class="close-btn" onclick="toggleMenu()">X</button>
+        </div>
+        
+        <div class="lesson-block">
+            <div class="lesson-title">1. ALLOCATION (<span class="lesson-code">int x = 5</span>)</div>
+            <div class="lesson-desc">Le système réserve un bloc mémoire nommé "x" et y injecte la valeur binaire 5.</div>
+        </div>
+        <div class="lesson-block">
+            <div class="lesson-title">2. UPDATE (<span class="lesson-code">x = 10</span>)</div>
+            <div class="lesson-desc">Écrasement de la donnée. L'ancienne valeur est marquée "DELETED" (rouge), la nouvelle est active (vert).</div>
+        </div>
+        <div class="lesson-block">
+            <div class="lesson-title">3. POINTER_INIT (<span class="lesson-code">int* p = &amp;x</span>)</div>
+            <div class="lesson-desc">Variable spéciale contenant une ADRESSE MÉMOIRE. Visuellement : un lien directionnel (flèche) vers la cible.</div>
+        </div>
+        <div class="lesson-block" style="border-left-color: var(--neon-red);">
+            <div class="lesson-title">4. DEREFERENCE (<span class="lesson-code">*p = 20</span>)</div>
+            <div class="lesson-desc">Commande critique. "Accéder à la cible pointée". Le système suit le lien et modifie la mémoire distante.</div>
+        </div>
+        <div class="lesson-block" style="border-left-color: #f1c40f;">
+            <div class="lesson-title">5. RE-LINK (<span class="lesson-code">p = &amp;y</span>)</div>
+            <div class="lesson-desc">Modification du pointeur lui-même. Le lien change de destination.</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="code-panel" id="codeDisplay"><div class="line" id="line-0">int main() {</div><div class="line" id="line-1">    int x = 2;</div><div class="line" id="line-2">    int y = 6;</div><div class="line" id="line-3">    int z = 12;</div><div class="line" id="line-4">    int* p = &amp;x;</div><div class="line" id="line-5">    z = 14;</div><div class="line" id="line-6">    p = &amp;z;</div><div class="line" id="line-7">    cout &lt;&lt; y &lt;&lt; endl;</div><div class="line" id="line-8">    *p = 16;  // UPDATE TGT: z</div><div class="line" id="line-9">    cout &lt;&lt; y &lt;&lt; endl;</div><div class="line" id="line-10">    return 0;</div><div class="line" id="line-11">}</div></div>
+
+        <div class="visualization-panel">
+            <div>
+                <div class="panel-label">&gt;&gt; CONSOLE_OUTPUT</div>
+                <div class="console-box" id="consoleOutput">root@sys:~# _</div>
+            </div>
+            <div class="memory-area" id="memoryArea">
+                <div class="panel-label">&gt;&gt; RAM_VISUALIZATION (STACK)</div>
+                <div id="variablesContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="cyber-btn btn-purple" id="genBtn" onclick="generateAndStart()">🎲 nouveau scenario</button>
+        <button class="cyber-btn" id="nextBtn" onclick="nextStep()">SUIVANT</button>
+    </div>
+
+    <script>
+        // --- GESTION DU MODE MOBILE/ORDI ---
+        function toggleLayout() {
+            const isMobile = document.getElementById('layoutToggle').checked;
+            if (isMobile) {
+                document.body.classList.add('mobile-view');
+            } else {
+                document.body.classList.remove('mobile-view');
+            }
+        }
+
+        // --- GESTION DU MENU ---
+        function toggleMenu() {
+            document.getElementById('sideMenu').classList.toggle('open');
+        }
+
+        // --- MOTEUR LOGIQUE (IDENTIQUE - PAS DE SIMPLIFICATION) ---
+        let currentScenario = [];
+        let currentStep = -1;
+        let memoryState = {}; 
+
+        function generateScenario() {
+            const steps = [];
+            const vars = ['x', 'y', 'z'];
+            const activeVars = [];
+            let simState = { x: 0, y: 0, z: 0 };
+            let ptrState = { name: 'p', target: null };
+
+            steps.push({ line: "int main() {", type: "info" });
+
+            const numVars = 2 + Math.floor(Math.random() * 2);
+            for(let i=0; i<numVars; i++) {
+                const varName = vars[i];
+                const val = Math.floor(Math.random() * 20);
+                simState[varName] = val;
+                activeVars.push(varName);
+                steps.push({ line: `    int ${varName} = ${val};`, action: createUpdateAction(varName, 'int', val) });
+            }
+
+            const startTarget = activeVars[Math.floor(Math.random() * activeVars.length)];
+            ptrState.target = startTarget;
+            steps.push({ line: `    int* p = &${startTarget};`, action: createUpdateAction('p', 'int*', `-> ${startTarget}`, true) });
+
+            const numOps = 5 + Math.floor(Math.random() * 3);
+            for(let i=0; i<numOps; i++) {
+                const type = Math.floor(Math.random() * 4);
+                if (type === 0) { 
+                    const v = activeVars[Math.floor(Math.random() * activeVars.length)];
+                    const newVal = Math.floor(Math.random() * 50);
+                    simState[v] = newVal;
+                    steps.push({ line: `    ${v} = ${newVal};`, action: createUpdateAction(v, 'int', newVal) });
+                } else if (type === 1) { 
+                    const newVal = Math.floor(Math.random() * 50);
+                    const target = ptrState.target;
+                    simState[target] = newVal;
+                    steps.push({ line: `    *p = ${newVal};  // UPDATE TGT: ${target}`, action: createUpdateAction(target, 'int', newVal) });
+                } else if (type === 2) { 
+                    let newTarget = activeVars[Math.floor(Math.random() * activeVars.length)];
+                    if(activeVars.length > 1) { while(newTarget === ptrState.target) { newTarget = activeVars[Math.floor(Math.random() * activeVars.length)]; }}
+                    ptrState.target = newTarget;
+                    steps.push({ line: `    p = &${newTarget};`, action: createUpdateAction('p', 'int*', `-> ${newTarget}`, true) });
+                } else { 
+                    if (Math.random() > 0.5) {
+                        const v = activeVars[Math.floor(Math.random() * activeVars.length)];
+                        steps.push({ line: `    cout << ${v} << endl;`, action: createPrintAction(simState[v]) });
+                    } else {
+                        steps.push({ line: `    cout << *p << endl;`, action: createPrintAction(simState[ptrState.target]) });
+                    }
+                }
+            }
+            steps.push({ line: "    return 0;", type: "info" });
+            steps.push({ line: "}", type: "info" });
+            return steps;
+        }
+
+        function createUpdateAction(name, type, val, isPtr=false) { return () => updateVar(name, type, val, isPtr); }
+        function createPrintAction(val) { return () => printConsole(val); }
+
+        function generateAndStart() {
+            resetSim();
+            currentScenario = generateScenario();
+            const codeContainer = document.getElementById('codeDisplay');
+            codeContainer.innerHTML = currentScenario.map((s, i) => `<div class="line" id="line-${i}">${s.line.replace(/</g, "&lt;")}</div>`).join('');
+            document.getElementById('nextBtn').disabled = false;
+        }
+
+        function nextStep() {
+            if (currentStep < currentScenario.length - 1) {
+                currentStep++;
+                document.querySelectorAll('.line').forEach(el => el.classList.remove('active-line'));
+                const lineEl = document.getElementById(`line-${currentStep}`);
+                if(lineEl) lineEl.classList.add('active-line');
+                if (currentScenario[currentStep].action) currentScenario[currentStep].action();
+                if(lineEl) lineEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } else {
+                document.getElementById('nextBtn').disabled = true;
+            }
+        }
+
+        function updateVar(name, type, value, isPointer = false) {
+            const container = document.getElementById('variablesContainer');
+            if (!memoryState[name]) {
+                memoryState[name] = { type: type, values: [] };
+                const box = document.createElement('div');
+                box.className = 'var-box';
+                box.id = `box-${name}`;
+                box.style.animation = "fadeIn 0.5s";
+                box.innerHTML = `<span class="var-name">${name}</span><ul class="value-list" id="vals-${name}"></ul><div class="var-type">&lt;${type}&gt;</div>`;
+                container.appendChild(box);
+            }
+            memoryState[name].values.push(value);
+            renderValues(name, isPointer);
+        }
+
+        function renderValues(name, isPointer) {
+            const list = document.getElementById(`vals-${name}`);
+            const values = memoryState[name].values;
+            let html = '';
+            values.forEach((val, index) => {
+                const isLast = index === values.length - 1;
+                let displayVal = val;
+                if (isPointer && typeof val === 'string' && val.startsWith('->')) {
+                    // Utilisation d'une flèche plus "tech"
+                    displayVal = `<span class="pointer-arrow">↘ ${val.substring(3)}</span>`;
+                }
+                html += isLast ? `<li class="current-value">${displayVal}</li>` : `<li class="crossed-out">${displayVal}</li>`;
+            });
+            list.innerHTML = html;
+        }
+
+        function printConsole(val) {
+            const consoleBox = document.getElementById('consoleOutput');
+            consoleBox.innerHTML += `<div>> ${val}</div>`;
+            consoleBox.scrollTop = consoleBox.scrollHeight;
+        }
+
+        function resetSim() {
+            currentStep = -1;
+            memoryState = {};
+            document.getElementById('variablesContainer').innerHTML = '';
+            document.getElementById('consoleOutput').innerHTML = 'root@sys:~# _';
+            document.querySelectorAll('.line').forEach(el => el.classList.remove('active-line'));
+        }
+
+        // Check auto si mobile
+        window.onload = function() {
+            if(window.innerWidth < 600) {
+                document.getElementById('layoutToggle').checked = true;
+                toggleLayout();
+            }
+            generateAndStart();
+        };
+    </script>
+<style>
+    /* L'écran noir qui recouvre tout au début */
+    #page-transition-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background-color: #050505; /* Noir profond du thème */
+        z-index: 99999; /* Au-dessus de tout */
+        opacity: 1;
+        transition: opacity 0.4s ease-in-out; /* Durée de la transition */
+        pointer-events: none; /* Permet de cliquer si jamais ça bug */
+    }
+    
+    /* Classe ajoutée en JS pour rendre transparent */
+    #page-transition-overlay.hidden {
+        opacity: 0;
+    }
+</style>
+
+<div id="page-transition-overlay" class="hidden"></div>
+
+<script>
+    // 1. TRANSITION D'ENTRÉE (FADE IN)
+    window.addEventListener('load', () => {
+        const overlay = document.getElementById('page-transition-overlay');
+        if(overlay) {
+            // Petit délai pour être sûr que le navigateur a affiché le fond noir
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+            }, 50);
+        }
+    });
+
+    // 2. TRANSITION DE SORTIE (FADE OUT)
+    document.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', function(e) {
+            const target = this.getAttribute('href');
+            
+            // On n'anime que les liens internes réels (pas les #, pas les liens externes)
+            if (target && target !== '#' && !target.startsWith('javascript') && this.target !== '_blank') {
+                e.preventDefault(); // Bloque le changement de page immédiat
+                
+                const overlay = document.getElementById('page-transition-overlay');
+                if(overlay) {
+                    overlay.classList.remove('hidden'); // Remet le noir
+                    
+                    // Attend la fin de l'animation (0.4s) avant de changer de page
+                    setTimeout(() => {
+                        window.location.href = target;
+                    }, 400); 
+                } else {
+                    window.location.href = target; // Sécurité si l'overlay n'existe pas
+                }
+            }
+        });
+    });
+</script>
+
+
+</body></html>

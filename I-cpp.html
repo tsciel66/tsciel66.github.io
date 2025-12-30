@@ -15,6 +15,7 @@
             --neon-green: #00ff41;
             --neon-red: #ff0055;     /* Pour les pointeurs (danger !) */
             --neon-yellow: #f5e642;  /* Pour l'organisation */
+            --neon-purple: #a855f7;  /* Pour le simulateur */
             --text-main: #e0e0e0;
             --font-tech: 'Share Tech Mono', monospace;
             --font-code: 'Fira Code', monospace;
@@ -169,6 +170,15 @@
             color: white;
         }
 
+        /* 4. Simulateur (Violet) */
+        .card-sim { border-left: 3px solid var(--neon-purple); }
+        .card-sim:hover {
+            background: rgba(168, 85, 247, 0.05);
+            border-color: var(--neon-purple);
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.2);
+            color: white;
+        }
+
         .folder-icon { font-size: 2rem; filter: drop-shadow(0 0 5px rgba(255,255,255,0.2)); }
         
         .folder-title {
@@ -230,9 +240,10 @@
                 <span class="folder-title">Code Struct &amp; Header</span>
             </a>
 
-            <a href="#" class="folder-card" style="opacity: 0.3; border-style: dashed; cursor: default;">
-                <span class="folder-icon">➕</span>
-                <span class="folder-title">Coming Soon...</span>
+            <a href="I-cpp-Roi du B2C.html" class="folder-card card-sim">
+                <div class="status-dot"></div>
+                <span class="folder-icon" style="color: var(--neon-purple);">👑</span>
+                <span class="folder-title">Le ROI du B2C</span>
             </a>
 
         </div>
